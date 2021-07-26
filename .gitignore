@@ -1,0 +1,13 @@
+# General
+node_modules
+.DS_STORE
+
+# Hardhat files
+artifacts
+cache
+
+# Config files
+.env
+
+# Notebooks
+.ipynb_checkpoints
