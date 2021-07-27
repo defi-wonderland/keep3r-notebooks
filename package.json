@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "jupyter": "jupyter lab --config config/jupyter_lab_config.py",
-    "jupyter:install": "pip install -r config/requirements.txt && ijsinstall",
+    "jupyter:install": "pip install -r config/requirements.txt && ijsinstall --hide-execution-result",
     "jupyter:prettier": "black exports/*.py && black-nb notebooks/*.ipynb",
     "jupyter:prettier__should__": "Run prettier in JS notebooks as well and added to gitHook",
     "jupyter:kill": "jupyter lab stop 8888",
