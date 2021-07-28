@@ -1,5 +1,7 @@
 const { utils } = require('ethers');
 
-exports.toUnit = (value) => {
+const toUnit = (value) => {
   return utils.parseUnits(value.toString());
 };
+
+exports.toUnit = toUnit;

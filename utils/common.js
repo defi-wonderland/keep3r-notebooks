@@ -4,7 +4,7 @@ const wallet = require('./wallet');
 const { toUnit } = require('./bn');
 const { ethers } = require('hardhat');
 
-exports.setupKeep3r = async () => {
+const setupKeep3r = async () => {
   // create governance with some eth
   const governance = await wallet.impersonate(wallet.generateRandomAddress());
   await contracts.setBalance(governance._address, toUnit(1000));
@@ -26,7 +26,7 @@ exports.setupKeep3r = async () => {
   await contracts.setBalance(keep3r.address, toUnit(1000));
   await contracts.setBalance(keep3rV1.address, toUnit(1000));
 
-  return { governance, keep3r, keep3rV1, keep3rV1Proxy };
+  return { governance, keep3r, keep3rV1, keep3rV1Proxy, helper };
 };
 
 async function setupKeep3rV1(governance) {
@@ -44,8 +44,11 @@ async function setupKeep3rV1(governance) {
   return { keep3rV1, keep3rV1Proxy };
 }
 
-exports.createJobForTest = async (keep3rAddress, jobOwner) => {
+const createJobForTest = async (keep3rAddress, jobOwner) => {
   const jobFactory = await ethers.getContractFactory('JobForTest');
 
   return await jobFactory.connect(jobOwner).deploy(keep3rAddress);
 };
+
+exports.setupKeep3r = setupKeep3r;
+exports.createJobForTest = createJobForTest;

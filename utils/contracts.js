@@ -1,5 +1,7 @@
 const { network } = require('hardhat');
 
-exports.setBalance = async (address, amount) => {
+const setBalance = async (address, amount) => {
   await network.provider.send('hardhat_setBalance', [address, amount.toHexString()]);
 };
+
+exports.setBalance = setBalance;
