@@ -43,6 +43,10 @@ const getLatestBlockTimestamp = async () => {
   return (await ethers.provider.getBlock('latest')).timestamp;
 };
 
+const getBlockTimestamp = async (blockNumber) => {
+  return (await ethers.provider.getBlock(blockNumber)).timestamp;
+};
+
 exports.advanceTimeAndBlock = advanceTimeAndBlock;
 exports.advanceToTimeAndBlock = advanceToTimeAndBlock;
 exports.advanceTime = advanceTime;
@@ -50,3 +54,4 @@ exports.advanceToTime = advanceToTime;
 exports.advanceBlock = advanceBlock;
 exports.reset = reset;
 exports.getLatestBlockTimestamp = getLatestBlockTimestamp;
+exports.getBlockTimestamp = getBlockTimestamp;

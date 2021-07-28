@@ -29,7 +29,7 @@ const setupKeep3r = async () => {
   return { governance, keep3r, keep3rV1, keep3rV1Proxy, helper };
 };
 
-async function setupKeep3rV1(governance) {
+const setupKeep3rV1 = async (governance) => {
   // get Keep3rV1 and it's governance
   const keep3rV1 = await ethers.getContractAt('IKeep3rV1', KP3R_V1_ADDRESS);
   const keep3rV1Governance = await wallet.impersonate(KP3R_V1_GOVERNANCE_ADDRESS);
