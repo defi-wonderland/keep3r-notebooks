@@ -94,30 +94,6 @@ class Notebook {
     const plot = Plot.createPlot([]);
     plot.addTraces([
       {
-        ...this.creditRecorder.getPendingCredits(this.job.address),
-        name: 'Pending credits',
-        mode: 'lines',
-        line: {
-          color: 'rgba(0, 0, 0, .3)',
-          width: 1,
-          dash: 'dashdot',
-        },
-      },
-    ]);
-    plot.addTraces([
-      {
-        ...this.creditRecorder.getCurrentCredits(this.job.address),
-        name: 'Current credits',
-        mode: 'lines',
-        line: {
-          color: 'rgba(51, 0, 255, .3)',
-          width: 1,
-          dash: 'dashdot',
-        },
-      },
-    ]);
-    plot.addTraces([
-      {
         ...this.creditRecorder.getTotalCredits(this.job.address),
         name: 'Total credits',
         mode: 'lines+markers',
