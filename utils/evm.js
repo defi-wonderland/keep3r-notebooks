@@ -1,4 +1,5 @@
 const { network } = require('hardhat');
+const { ethers } = require('hardhat');
 
 const advanceTimeAndBlock = async (time) => {
   await advanceTime(time);

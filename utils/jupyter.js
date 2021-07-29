@@ -1,6 +1,10 @@
 let previous;
 const next = async (fn) => {
   previous = previous ? previous.then(() => fn()) : fn();
+  previous.catch(err => {
+    console.error(err);
+    previous = null;
+  });
 };
 
 const clear = () => {};
