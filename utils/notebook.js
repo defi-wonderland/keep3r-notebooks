@@ -76,6 +76,20 @@ class Notebook {
     await this.creditRecorder.record(this.job.address);
   }
 
+  async sleepAndRecord(totalSleepTime, recordEvery) {
+    let totalSlept = 0;
+    await this.recordCredits();
+
+    while (totalSlept < (totalSleepTime - recordEvery)) {    
+        await advanceTimeAndBlock(recordEvery);
+        await this.recordCredits();
+        totalSlept += recordEvery;
+    }
+
+    await advanceTimeAndBlock(totalSleepTime - totalSlept);
+    await this.recordCredits();
+  }
+
   async draw() {
     const plot = Plot.createPlot([]);
     plot.addTraces([
