@@ -39,7 +39,7 @@ class Notebook {
 
     // setup job
     this.job = await common.createJobForTest(this.keep3r.address, this.jobOwner);
-    await this.keep3r.connect(this.governance).addJob(this.job.address);
+    await this.keep3r.connect(this.jobOwner).addJob(this.job.address);
 
     // setup web3 keep3r
     const artifact = await artifacts.readArtifact('Keep3r');
@@ -66,6 +66,10 @@ class Notebook {
     await this.kp3rWeth.connect(this.kp3rWethWale).transfer(this.jobOwner.address, amount);
     await this.kp3rWeth.connect(this.jobOwner).approve(this.keep3r.address, amount);
     await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, this.kp3rWeth.address, amount);
+  }
+
+  async removeLiquidityToJob(amount) {
+    await this.keep3r.connect(this.jobOwner).withdrawLiquidityFromJob(this.job.address, this.kp3rWeth.address, amount);
   }
 
   async recordCredits() {
@@ -111,7 +115,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.getWorkEventsTrace()),
+        ...(await this.getEventsTrace('KeeperWork')),
         name: 'Work',
         mode: 'markers',
         marker: {
@@ -133,23 +137,43 @@ class Notebook {
         },
       },
     ]);
+    plot.addTraces([
+      {
+        ...(await this.getEventsTrace('LiquidityAddition')),
+        name: 'Liquidity added',
+        mode: 'markers',
+        marker: {
+          symbol: 'triangle-up',
+          size: 16,
+          color: 'rgb(0, 255, 0)',
+        },
+      },
+    ]);
+    plot.addTraces([
+      {
+        ...(await this.getEventsTrace('LiquidityWithdrawal')),
+        name: 'Liquidity withdrawn',
+        mode: 'markers',
+        marker: {
+          symbol: 'triangle-down',
+          size: 16,
+          color: 'rgb(255, 0, 0)',
+        },
+      },
+    ]);
 
     $$html$$ = plot.render();
   }
 
-  async getWorkEventsTrace() {
-    const workEvents = await getPastEvents(this.w3Keep3r, 'KeeperWork');
-    const timestampPromises = workEvents.map((workEvent) => getBlockTimestamp(workEvent.blockNumber));
+  async getEventsTrace(eventName) {
+    const events = await getPastEvents(this.w3Keep3r, eventName);
+    const timestampPromises = events.map((workEvent) => getBlockTimestamp(workEvent.blockNumber));
     
     return Promise.all(timestampPromises).then((timestamps) => {
-      const workTrace = { x: [], y: [] };
-      
-      timestamps.forEach(timestamp => {
-        workTrace.x.push(unixToDate(timestamp));
-        workTrace.y.push(0);
-      });
-      
-      return workTrace;
+      return timestamps.reduce((acc, timestamp) => ({
+        x: [...acc.x, unixToDate(timestamp)],
+        y: [...acc.y, 0]
+      }), { x: [], y: [] });
     });
   }
 
