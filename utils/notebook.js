@@ -20,6 +20,7 @@ class Notebook {
   w3Keep3r;
   kp3rWeth;
   kp3rWethWale;
+  rewardPeriod;
 
   async setup() {
     await evm.reset({
@@ -56,6 +57,9 @@ class Notebook {
 
     // setup credit recorder
     this.creditRecorder = new CreditRecorder(this.keep3r);
+
+    // setup reward period
+    this.rewardPeriod = (await notebook.keep3r.REWARD_PERIOD()).toNumber();
   }
 
   async addLiquidityToJob(amount) {
@@ -152,18 +156,17 @@ class Notebook {
   async getPeriodTrace() {
     const periodTrace = { x: [], y: [] };
 
-    const rewardPeriod = (await notebook.keep3r.REWARD_PERIOD()).toNumber();
     const firstTimestamp = await getBlockTimestamp(constants.FORK_BLOCK_NUMBER);
     const latestTimestamp = await getLatestBlockTimestamp();
     
-    const firstPeriod = firstTimestamp - (firstTimestamp % rewardPeriod) + rewardPeriod;
-    const lastPeriod = latestTimestamp - (latestTimestamp % rewardPeriod);
+    const firstPeriod = firstTimestamp - (firstTimestamp % this.rewardPeriod) + this.rewardPeriod;
+    const lastPeriod = latestTimestamp - (latestTimestamp % this.rewardPeriod);
     
     let currentPeriod = firstPeriod;
     while (currentPeriod <= lastPeriod) {
       periodTrace.x.push(unixToDate(currentPeriod));
       periodTrace.y.push(0);
-      currentPeriod += rewardPeriod;
+      currentPeriod += this.rewardPeriod;
     }
 
     return periodTrace;
