@@ -94,6 +94,18 @@ class Notebook {
     const plot = Plot.createPlot([]);
     plot.addTraces([
       {
+        ...this.creditRecorder.getCurrentCredits(this.job.address),
+        name: 'Current credits',
+        mode: 'lines',
+        line: {
+          color: 'rgba(51, 0, 255, .3)',
+          width: 1,
+          dash: 'dashdot',
+        },
+      },
+    ]);
+    plot.addTraces([
+      {
         ...this.creditRecorder.getTotalCredits(this.job.address),
         name: 'Total credits',
         mode: 'lines+markers',
@@ -112,6 +124,18 @@ class Notebook {
           symbol: 'x-thin-open',
           size: 12,
           color: 'rgb(0, 0, 255)',
+        },
+      },
+    ]);
+    plot.addTraces([
+      {
+        ...(await this.getEventsTrace('JobCreditsUpdated', 1)),
+        name: 'Rewarded At',
+        mode: 'markers',
+        marker: {
+          symbol: 'star',
+          size: 12,
+          color: 'rgb(255, 215, 0)',
         },
       },
     ]);
@@ -155,9 +179,16 @@ class Notebook {
     $$html$$ = plot.render();
   }
 
-  async getEventsTrace(eventName) {
+  async getEventsTrace(eventName, timestampArgIndex) {
     const events = await getPastEvents(this.w3Keep3r, eventName);
-    const timestampPromises = events.map((workEvent) => getBlockTimestamp(workEvent.blockNumber));
+
+    let timestampPromises;
+    if (timestampArgIndex === undefined) {
+      timestampPromises = events.map((event) => getBlockTimestamp(event.blockNumber));
+    } else {
+      // grab timestamp from event arguments
+      timestampPromises = events.map((event) => Promise.resolve(event.returnValues[timestampArgIndex]));
+    }
     
     return Promise.all(timestampPromises).then((timestamps) => {
       return timestamps.reduce((acc, timestamp) => ({
