@@ -1,5 +1,5 @@
 # General
-workspace.code-workspace
+*.code-workspace
 .DS_STORE
 .prettierignore
 .husky

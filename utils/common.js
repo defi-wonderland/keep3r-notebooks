@@ -42,7 +42,7 @@ const setupKeep3rV1 = async (governance) => {
   await keep3rV1Proxy.connect(governance).acceptKeep3rV1Governance();
 
   return { keep3rV1, keep3rV1Proxy };
-}
+};
 
 const createJobForTest = async (keep3rAddress, jobOwner) => {
   const jobFactory = await ethers.getContractFactory('JobForTest');

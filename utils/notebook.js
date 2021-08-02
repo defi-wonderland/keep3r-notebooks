@@ -80,10 +80,10 @@ class Notebook {
     let totalSlept = 0;
     await this.recordCredits();
 
-    while (totalSlept < (totalSleepTime - recordEvery)) {    
-        await advanceTimeAndBlock(recordEvery);
-        await this.recordCredits();
-        totalSlept += recordEvery;
+    while (totalSlept < totalSleepTime - recordEvery) {
+      await advanceTimeAndBlock(recordEvery);
+      await this.recordCredits();
+      totalSlept += recordEvery;
     }
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
@@ -189,12 +189,15 @@ class Notebook {
       // grab timestamp from event arguments
       timestampPromises = events.map((event) => Promise.resolve(event.returnValues[timestampArgIndex]));
     }
-    
+
     return Promise.all(timestampPromises).then((timestamps) => {
-      return timestamps.reduce((acc, timestamp) => ({
-        x: [...acc.x, unixToDate(timestamp)],
-        y: [...acc.y, 0]
-      }), { x: [], y: [] });
+      return timestamps.reduce(
+        (acc, timestamp) => ({
+          x: [...acc.x, unixToDate(timestamp)],
+          y: [...acc.y, 0],
+        }),
+        { x: [], y: [] }
+      );
     });
   }
 
@@ -203,10 +206,10 @@ class Notebook {
 
     const firstTimestamp = await getBlockTimestamp(constants.FORK_BLOCK_NUMBER);
     const latestTimestamp = await getLatestBlockTimestamp();
-    
+
     const firstPeriod = firstTimestamp - (firstTimestamp % this.rewardPeriod) + this.rewardPeriod;
     const lastPeriod = latestTimestamp - (latestTimestamp % this.rewardPeriod);
-    
+
     let currentPeriod = firstPeriod;
     while (currentPeriod <= lastPeriod) {
       periodTrace.x.push(unixToDate(currentPeriod));

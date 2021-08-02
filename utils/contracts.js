@@ -9,7 +9,7 @@ const getPastEvents = (contract, eventName, options) => {
   return new Promise((resolve, reject) => {
     const optionsWithDefault = {
       fromBlock: FORK_BLOCK_NUMBER,
-      ...options
+      ...options,
     };
 
     contract.getPastEvents(eventName, optionsWithDefault, (err, events) => {
@@ -17,7 +17,7 @@ const getPastEvents = (contract, eventName, options) => {
       else resolve(events);
     });
   });
-}
+};
 
 exports.setBalance = setBalance;
 exports.getPastEvents = getPastEvents;

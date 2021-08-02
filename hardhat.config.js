@@ -1,5 +1,5 @@
 require('@nomiclabs/hardhat-ethers');
-require("@nomiclabs/hardhat-web3");
+require('@nomiclabs/hardhat-web3');
 require('dotenv').config();
 
 module.exports = {
