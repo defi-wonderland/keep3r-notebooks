@@ -20,5 +20,5 @@ yarn.lock
 
 # Notebooks
 .ipynb_checkpoints
-notebooks
+*.ipynb
 config
