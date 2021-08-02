@@ -18,8 +18,6 @@ class Notebook {
   helper;
   job;
   w3Keep3r;
-  kp3rWeth;
-  kp3rWethWale;
   rewardPeriod;
 
   async setup() {
@@ -45,11 +43,6 @@ class Notebook {
     const artifact = await artifacts.readArtifact('Keep3r');
     this.w3Keep3r = new web3.eth.Contract(artifact.abi, this.keep3r.address);
 
-    // setup liquidity
-    this.kp3rWethWale = await wallet.impersonate(constants.RICH_KP3R_WETH_POOL_ADDRESS);
-    this.kp3rWeth = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', constants.KP3R_WETH_POOL_ADDRESS);
-    await this.keep3r.connect(this.governance).approveLiquidity(this.kp3rWeth.address);
-
     // setup keeper
     await this.keep3r.connect(this.keeper).bond(constants.KP3R_V1_ADDRESS, 0);
     await evm.advanceTimeAndBlock(moment.duration(3, 'days').as('seconds'));
@@ -62,14 +55,22 @@ class Notebook {
     this.rewardPeriod = (await notebook.keep3r.REWARD_PERIOD()).toNumber();
   }
 
-  async addLiquidityToJob(amount) {
-    await this.kp3rWeth.connect(this.kp3rWethWale).transfer(this.jobOwner.address, amount);
-    await this.kp3rWeth.connect(this.jobOwner).approve(this.keep3r.address, amount);
-    await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, this.kp3rWeth.address, amount);
+  async setupLiquidity(liquidityData) {
+    const wale = await wallet.impersonate(liquidityData.wale);
+    const pool = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', liquidityData.pool);
+    await pool.connect(wale).transfer(this.jobOwner.address, 1);
+    await this.keep3r.connect(this.governance).approveLiquidity(pool.address);
+    return { wale, pool };
+  }
+  
+  async addLiquidityToJob(pool, wale, amount) {
+    await pool.connect(wale).transfer(this.jobOwner.address, amount);
+    await pool.connect(this.jobOwner).approve(this.keep3r.address, amount);
+    await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, pool.address, amount);
   }
 
-  async removeLiquidityToJob(amount) {
-    await this.keep3r.connect(this.jobOwner).withdrawLiquidityFromJob(this.job.address, this.kp3rWeth.address, amount);
+  async removeLiquidityToJob(pool, amount) {
+    await this.keep3r.connect(this.jobOwner).withdrawLiquidityFromJob(this.job.address, pool.address, amount);
   }
 
   async recordCredits() {
