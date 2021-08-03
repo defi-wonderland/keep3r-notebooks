@@ -52,7 +52,7 @@ class Notebook {
     this.creditRecorder = new CreditRecorder(this.keep3r);
 
     // setup reward period
-    this.rewardPeriod = (await notebook.keep3r.REWARD_PERIOD()).toNumber();
+    this.rewardPeriod = (await notebook.keep3r.rewardPeriodTime()).toNumber();
   }
 
   async setupLiquidity(liquidityData) {
@@ -62,7 +62,7 @@ class Notebook {
     await this.keep3r.connect(this.governance).approveLiquidity(pool.address);
     return { wale, pool };
   }
-  
+
   async addLiquidityToJob(pool, wale, amount) {
     await pool.connect(wale).transfer(this.jobOwner.address, amount);
     await pool.connect(this.jobOwner).approve(this.keep3r.address, amount);
