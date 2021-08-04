@@ -12,60 +12,60 @@ clear();
 var $ = new Notebook();
 
 next(async () => {
-    await $.setup();
+  await $.setup();
 });
 
 var liquidityPool, liquidityWhale;
 next(async () => {
-    const data = await $.setupLiquidity(LIQUIDITIES.KP3R_WETH);
-    liquidityPool = data.pool;
-    liquidityWhale = data.whale;
+  const data = await $.setupLiquidity(LIQUIDITIES.KP3R_WETH);
+  liquidityPool = data.pool;
+  liquidityWhale = data.whale;
 });
 
 next(async () => {
-    await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(10));
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(10));
 });
 
 next(async () => {
-    const timeToSleep = moment.duration(1, 'month').as('seconds');
-    const startedToWorkAt = await getLatestBlockTimestamp();
-    
-    console.log('Start of simulation');
-    await $.recordCredits();
-    
-    // sleep 1 day
-    await advanceTimeAndBlock(moment.duration(5, 'day').as('seconds'));
-    await $.recordCredits();
+  const timeToSleep = moment.duration(1, 'month').as('seconds');
+  const startedToWorkAt = await getLatestBlockTimestamp();
 
-    // work
+  console.log('Start of simulation');
+  await $.recordCredits();
+
+  // sleep 1 day
+  await $.sleep(moment.duration(5, 'day').as('seconds'));
+  await $.recordCredits();
+
+  // work
+  await $.job.connect($.keeper).work();
+  await $.recordCredits();
+
+  // sleep 1 month, record credits every day
+  await $.sleepAndRecord(moment.duration(0.5, 'month').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+
+  // work
+  await $.job.connect($.keeper).work();
+  await $.recordCredits();
+
+  // sleep some hours
+  await $.sleep(moment.duration(2, 'days').as('seconds'));
+  await $.recordCredits();
+
+  // work a lot
+  for (let i = 0; i < 3; i++) {
+    await $.recordCredits();
     await $.job.connect($.keeper).work();
+    await $.sleep(moment.duration(12, 'hours').as('seconds'));
     await $.recordCredits();
-    
-    // sleep 1 month, record credits every day
-    await $.sleepAndRecord(moment.duration(0.5, 'month').as('seconds'), moment.duration(4, 'hours').as('seconds'));
-    
-    // work
-    await $.job.connect($.keeper).work();
-    await $.recordCredits();
-    
-    // sleep some hours
-    await advanceTimeAndBlock(moment.duration(2, 'days').as('seconds'));
-    await $.recordCredits();
-    
-    // work a lot
-    for (let i = 0; i < 3; i++) {
-        await $.recordCredits();
-        await $.job.connect($.keeper).work();
-        await advanceTimeAndBlock(moment.duration(12, 'hours').as('seconds'));
-        await $.recordCredits();
-    }
-    
-    // sleep 2 weeks, record credits every day
-    await $.sleepAndRecord(moment.duration(2, 'weeks').as('seconds'), moment.duration(4, 'hours').as('seconds'));
-    
-    console.log('End of simulation');
+  }
+
+  // sleep 2 weeks, record credits every day
+  await $.sleepAndRecord(moment.duration(2, 'weeks').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+
+  console.log('End of simulation');
 });
 
 next(async () => {
-    await $.draw();
+  await $.draw();
 });

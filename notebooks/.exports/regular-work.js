@@ -12,46 +12,46 @@ clear();
 var $ = new Notebook();
 
 next(async () => {
-    await $.setup();
+  await $.setup();
 });
 
 var liquidityPool, liquidityWhale;
 next(async () => {
-    const data = await $.setupLiquidity(LIQUIDITIES.KP3R_WETH);
-    liquidityPool = data.pool;
-    liquidityWhale = data.whale;
+  const data = await $.setupLiquidity(LIQUIDITIES.KP3R_WETH);
+  liquidityPool = data.pool;
+  liquidityWhale = data.whale;
 });
 
 next(async () => {
-    await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(10));
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(10));
 });
 
-next(async () => {    
-    const timeToWork = $.rewardPeriod * 4;
-    const startedToWorkAt = await getLatestBlockTimestamp();
-    const sleepTime = moment.duration(72, 'hours').as('seconds');
-    
-    console.log('Start of simulation');
+next(async () => {
+  const timeToWork = $.rewardPeriod * 4;
+  const startedToWorkAt = await getLatestBlockTimestamp();
+  const sleepTime = moment.duration(72, 'hours').as('seconds');
+
+  console.log('Start of simulation');
+  await $.recordCredits();
+
+  // sleep
+  await $.sleep(sleepTime);
+  await $.recordCredits();
+
+  // until 4 periods have not passed
+  while ((await getLatestBlockTimestamp()) - startedToWorkAt < timeToWork) {
+    // work
+    await $.job.connect($.keeper).work();
     await $.recordCredits();
-    
+
     // sleep
-    await advanceTimeAndBlock(sleepTime);
+    await $.sleepAndRecord(sleepTime, moment.duration(4, 'hours').as('seconds'));
     await $.recordCredits();
-    
-    // until 4 periods have not passed
-    while ((await getLatestBlockTimestamp()) - startedToWorkAt < timeToWork) {
-        // work
-        await $.job.connect($.keeper).work();
-        await $.recordCredits();
-        
-        // sleep
-        await $.sleepAndRecord(sleepTime, moment.duration(4, 'hours').as('seconds'));
-        await $.recordCredits();
-    }
-    
-    console.log('End of simulation');
+  }
+
+  console.log('End of simulation');
 });
 
 next(async () => {
-    await $.draw();
+  await $.draw();
 });

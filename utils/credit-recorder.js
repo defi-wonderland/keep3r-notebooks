@@ -26,8 +26,8 @@ class CreditRecorder {
 
   async reset(jobAddress) {
     /* TODO: Add this functionality $.resetRecording() */
-    delete this.currentCreditsTrace[jobAddress]
-    console.log('deleted')
+    delete this.currentCreditsTrace[jobAddress];
+    console.log('deleted');
   }
 
   async recordCurrentCredits(jobAddress) {

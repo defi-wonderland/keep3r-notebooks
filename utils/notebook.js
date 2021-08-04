@@ -77,7 +77,7 @@ class Notebook {
     await this.creditRecorder.record(this.job.address);
   }
 
-  async resetRecording(){
+  async resetRecording() {
     await this.creditRecorder.reset(this.job.address);
   }
 
@@ -126,7 +126,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'KeeperWork')),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'KeeperWork')),
         name: 'Work',
         mode: 'markers',
         marker: {
@@ -138,7 +138,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'JobCreditsUpdated', 1)),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'JobCreditsUpdated', 1)),
         name: 'Rewarded At',
         mode: 'markers',
         marker: {
@@ -162,7 +162,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'LiquidityAddition')),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityAddition')),
         name: 'Liquidity added',
         mode: 'markers',
         marker: {
@@ -174,7 +174,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'LiquidityWithdrawal')),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityWithdrawal')),
         name: 'Liquidity withdrawn',
         mode: 'markers',
         marker: {

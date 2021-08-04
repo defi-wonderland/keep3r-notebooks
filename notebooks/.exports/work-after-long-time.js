@@ -34,7 +34,7 @@ next(async () => {
   await $.recordCredits();
 
   // sleep 1 day
-  await advanceTimeAndBlock(moment.duration(2, 'day').as('seconds'));
+  await $.sleep(moment.duration(2, 'day').as('seconds'));
   await $.recordCredits();
 
   // work
