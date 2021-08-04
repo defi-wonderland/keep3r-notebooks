@@ -12,42 +12,42 @@ clear();
 var $ = new Notebook();
 
 next(async () => {
-    await $.setup();
+  await $.setup();
 });
 
 var liquidityPool, liquidityWhale;
 next(async () => {
-    const data = await $.setupLiquidity(LIQUIDITIES.KP3R_WETH);
-    liquidityPool = data.pool;
-    liquidityWhale = data.whale;
+  const data = await $.setupLiquidity(LIQUIDITIES.KP3R_WETH);
+  liquidityPool = data.pool;
+  liquidityWhale = data.whale;
 });
 
 next(async () => {
-    await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(1));
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(1));
 });
 
 next(async () => {
-    console.log('Start of simulation');
-    await $.recordCredits();
-    
-    // sleep 3 periods
-    await $.sleepAndRecord($.rewardPeriod * 3 - moment.duration(3, 'days').as('seconds'), moment.duration(4, 'hours').as('seconds'));
-    await $.recordCredits();
-    
-    // add liquidity
-    await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(1));
-    await $.recordCredits();
-    
-    // sleep 3 periods
-    await $.sleepAndRecord($.rewardPeriod * 3, moment.duration(4, 'hours').as('seconds'));
-    
-    // work
-    await $.job.connect($.keeper).work();
-    await $.recordCredits();
-    
-    console.log('End of simulation');
+  console.log('Start of simulation');
+  await $.recordCredits();
+
+  // sleep 3 periods
+  await $.sleepAndRecord($.rewardPeriod * 3 - moment.duration(3, 'days').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+  await $.recordCredits();
+
+  // add liquidity
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(1));
+  await $.recordCredits();
+
+  // sleep 3 periods
+  await $.sleepAndRecord($.rewardPeriod * 3, moment.duration(4, 'hours').as('seconds'));
+
+  // work
+  await $.job.connect($.keeper).work();
+  await $.recordCredits();
+
+  console.log('End of simulation');
 });
 
 next(async () => {
-    await $.draw();
+  await $.draw();
 });

@@ -9,7 +9,14 @@ class CreditRecorder {
     this.keep3r = keep3r;
   }
 
+  /*
+  Factory
+  input -> list of views (address)
+    -> make input independant of types
+  */
+
   async record(jobAddress) {
+    // adds a point of the list of views
     await this.recordCurrentCredits(jobAddress);
     await this.recordTotalCredits(jobAddress);
   }
