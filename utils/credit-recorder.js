@@ -7,6 +7,7 @@ class CreditRecorder {
   keep3r;
   totalCreditsTrace = {};
   currentCreditsTrace = {};
+  blockReference;
 
   constructor(keep3r) {
     this.keep3r = keep3r;
@@ -25,9 +26,9 @@ class CreditRecorder {
   }
 
   async reset(jobAddress) {
-    /* TODO: Add this functionality $.resetRecording() */
     delete this.currentCreditsTrace[jobAddress];
-    console.log('deleted');
+    delete this.totalCreditsTrace[jobAddress];
+    this.blockReference = await getBlockTimestamp();
   }
 
   async recordCurrentCredits(jobAddress) {
@@ -55,7 +56,7 @@ class CreditRecorder {
   }
 
   async getEventsTrace(eventContract, eventName, timestampArgIndex) {
-    const events = await getPastEvents(eventContract, eventName);
+    const events = await getPastEvents(eventContract, eventName, this.blockReference);
 
     let timestampPromises;
     if (timestampArgIndex === undefined) {

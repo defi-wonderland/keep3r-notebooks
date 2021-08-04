@@ -5,10 +5,13 @@ const setBalance = async (address, amount) => {
   await network.provider.send('hardhat_setBalance', [address, amount.toHexString()]);
 };
 
-const getPastEvents = (contract, eventName, options) => {
+const getPastEvents = (contract, eventName, fromBlock, options) => {
+  if(fromBlock == undefined){
+    fromBlock = FORK_BLOCK_NUMBER;
+  }
   return new Promise((resolve, reject) => {
     const optionsWithDefault = {
-      fromBlock: FORK_BLOCK_NUMBER,
+      fromBlock: fromBlock,
       ...options,
     };
 

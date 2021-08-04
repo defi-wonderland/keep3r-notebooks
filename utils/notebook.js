@@ -78,8 +78,12 @@ class Notebook {
     await this.creditRecorder.record(this.job.address);
   }
 
-  async resetRecording() {
-    await this.creditRecorder.reset(this.job.address);
+  resetRecording() {
+    this.creditRecorder.reset(this.job.address);
+  }
+
+  async block(){
+    return await ethers.provider.getBlock('latest');
   }
 
   time(timeUnits, unit, asUnits) {
