@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "jupyter": "jupyter lab --config config/jupyter_lab_config.py",
+    "jupyter": "screen -A -m -d -S jupyterScreen jupyter lab --config config/jupyter_lab_config.py",
     "jupyter:install": "pip install -r config/requirements.txt && ijsinstall",
     "jupyter:prettier": "black exports/*.py && black-nb notebooks/*.ipynb",
     "jupyter:prettier__should__": "Run prettier in JS notebooks as well and added to gitHook",
+    "jupyter:screen": "screen -r jupyterScreen",
+    "jupyter:screen__should__": "Detach with ctrl+a+d",
     "jupyter:kill": "jupyter lab stop 8888",
     "postinstall": "husky install",
     "lint:check": "cross-env prettier --check './**'",

@@ -39,4 +39,4 @@ c.FileContentsManager.post_save_hook = script_post_save
 c.ServerApp.root_dir = 'notebooks/'
 
 c.ServerApp.port = 8888
-c.ServerApp.port_retries = 10
+c.ServerApp.port_retries = 0
