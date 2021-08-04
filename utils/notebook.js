@@ -56,15 +56,15 @@ class Notebook {
   }
 
   async setupLiquidity(liquidityData) {
-    const wale = await wallet.impersonate(liquidityData.wale);
+    const whale = await wallet.impersonate(liquidityData.whale);
     const pool = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', liquidityData.pool);
-    await pool.connect(wale).transfer(this.jobOwner.address, 1);
+    await pool.connect(whale).transfer(this.jobOwner.address, 1);
     await this.keep3r.connect(this.governance).approveLiquidity(pool.address);
-    return { wale, pool };
+    return { whale, pool };
   }
 
-  async addLiquidityToJob(pool, wale, amount) {
-    await pool.connect(wale).transfer(this.jobOwner.address, amount);
+  async addLiquidityToJob(pool, whale, amount) {
+    await pool.connect(whale).transfer(this.jobOwner.address, amount, { gasPrice: 0 });
     await pool.connect(this.jobOwner).approve(this.keep3r.address, amount);
     await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, pool.address, amount);
   }
@@ -89,6 +89,10 @@ class Notebook {
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
     await this.recordCredits();
+  }
+
+  async sleep(totalSleepTime) {
+    await advanceTimeAndBlock(totalSleepTime);
   }
 
   async draw() {
