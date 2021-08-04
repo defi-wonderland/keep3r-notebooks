@@ -52,7 +52,7 @@ class Notebook {
     this.creditRecorder = new CreditRecorder(this.keep3r);
 
     // setup reward period
-    this.rewardPeriod = (await notebook.keep3r.rewardPeriodTime()).toNumber();
+    this.rewardPeriod = (await this.keep3r.rewardPeriodTime()).toNumber();
   }
 
   async setupLiquidity(liquidityData) {
