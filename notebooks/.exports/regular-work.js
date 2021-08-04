@@ -1,6 +1,5 @@
 var moment = require('moment');
 var { constants } = require('../utils');
-var { advanceTimeAndBlock } = require('../utils/evm');
 var { toUnit } = require('../utils/bn');
 var { LIQUIDITIES } = require('../utils/constants');
 var { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
@@ -29,7 +28,7 @@ next(async () => {
 next(async () => {
   const timeToWork = $.rewardPeriod * 4;
   const startedToWorkAt = await getLatestBlockTimestamp();
-  const sleepTime = moment.duration(72, 'hours').as('seconds');
+  const sleepTime = $.time(72, 'hours');
 
   console.log('Start of simulation');
   await $.recordCredits();
@@ -45,7 +44,7 @@ next(async () => {
     await $.recordCredits();
 
     // sleep
-    await $.sleepAndRecord(sleepTime, moment.duration(4, 'hours').as('seconds'));
+    await $.sleepAndRecord(sleepTime, $.time(4, 'hours'));
     await $.recordCredits();
   }
 

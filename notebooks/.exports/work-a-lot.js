@@ -34,7 +34,7 @@ next(async () => {
   await $.recordCredits();
 
   // sleep 1 day
-  await $.sleep(moment.duration(5, 'day').as('seconds'));
+  await $.sleep($.time(5, 'days', 'seconds'));
   await $.recordCredits();
 
   // work
@@ -49,19 +49,19 @@ next(async () => {
   await $.recordCredits();
 
   // sleep some hours
-  await $.sleep(moment.duration(2, 'days').as('seconds'));
+  await $.sleep($.time(2, 'days'));
   await $.recordCredits();
 
   // work a lot
   for (let i = 0; i < 3; i++) {
     await $.recordCredits();
     await $.job.connect($.keeper).work();
-    await $.sleep(moment.duration(12, 'hours').as('seconds'));
+    await $.sleep($.time(12, 'hours'));
     await $.recordCredits();
   }
 
   // sleep 2 weeks, record credits every day
-  await $.sleepAndRecord(moment.duration(2, 'weeks').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.time(2, 'weeks'), $.time(4, 'hours'));
 
   console.log('End of simulation');
 });

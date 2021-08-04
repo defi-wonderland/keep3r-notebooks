@@ -7,6 +7,7 @@ const { ethers, web3, artifacts } = require('hardhat');
 const moment = require('moment');
 const Plot = require('plotly-notebook-js');
 const { CreditRecorder } = require('../utils/credit-recorder');
+const { advanceTimeAndBlock } = require('../utils/evm');
 
 class Notebook {
   creditRecorder;
@@ -79,6 +80,13 @@ class Notebook {
 
   async resetRecording() {
     await this.creditRecorder.reset(this.job.address);
+  }
+
+  time(timeUnits, unit, asUnits) {
+    if (asUnits == undefined) {
+      asUnits = 'seconds';
+    }
+    return moment.duration(timeUnits, unit).as(asUnits);
   }
 
   async sleep(totalSleepTime) {

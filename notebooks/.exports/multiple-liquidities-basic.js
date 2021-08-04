@@ -1,5 +1,4 @@
 var moment = require('moment');
-var { advanceTimeAndBlock } = require('../utils/evm');
 var { toUnit } = require('../utils/bn');
 var { LIQUIDITIES } = require('../utils/constants');
 var { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
@@ -31,15 +30,15 @@ next(async () => {
 next(async () => {
   // add 2 units of wethKp3r and sleep 2 weeks
   await $.addLiquidityToJob(wethPool, wethPoolWhale, toUnit(2));
-  await $.sleepAndRecord(moment.duration(2, 'weeks').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.time(2, 'weeks'), $.time(4, 'hours'));
 
   // add 1 unit of ldoKp3r and sleep 2 weeks
   await $.addLiquidityToJob(ldoPool, ldoPoolWhale, toUnit(1));
-  await $.sleepAndRecord(moment.duration(2, 'weeks').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.time(2, 'weeks'), $.time(4, 'hours'));
 });
 
 next(async () => {
-  const timeToSleep = moment.duration(1, 'month').as('seconds');
+  const timeToSleep = $.time(1, 'month');
   const startedToWorkAt = await getLatestBlockTimestamp();
 
   console.log('Start of simulation');
@@ -49,7 +48,7 @@ next(async () => {
   await $.recordCredits();
 
   // sleep some more
-  await $.sleepAndRecord(moment.duration(2, 'weeks').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.time(2, 'weeks'), $.time(4, 'hours'));
 
   console.log('End of simulation');
 });

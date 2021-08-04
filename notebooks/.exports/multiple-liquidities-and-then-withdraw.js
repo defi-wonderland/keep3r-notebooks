@@ -1,5 +1,4 @@
 var moment = require('moment');
-var { advanceTimeAndBlock } = require('../utils/evm');
 var { toUnit } = require('../utils/bn');
 var { LIQUIDITIES } = require('../utils/constants');
 var { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
@@ -38,14 +37,14 @@ next(async () => {
   await $.recordCredits();
 
   // sleep 6 periods
-  await $.sleepAndRecord($.rewardPeriod * 6, moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.rewardPeriod * 6, $.time(4, 'hours'));
 
   // remove half of weth liquidity
   await $.removeLiquidityToJob(wethPool, toUnit(5));
   await $.recordCredits();
 
   // sleep 6 periods
-  await $.sleepAndRecord($.rewardPeriod * 6, moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.rewardPeriod * 6, $.time(4, 'hours'));
 
   console.log('End of simulation');
 });

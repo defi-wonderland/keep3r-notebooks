@@ -1,6 +1,5 @@
 var moment = require('moment');
 var { constants } = require('../utils');
-var { advanceTimeAndBlock } = require('../utils/evm');
 var { toUnit } = require('../utils/bn');
 var { LIQUIDITIES } = require('../utils/constants');
 var { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
@@ -31,7 +30,7 @@ next(async () => {
   await $.recordCredits();
 
   // sleep 3 periods
-  await $.sleepAndRecord($.rewardPeriod * 3 - moment.duration(3, 'days').as('seconds'), moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.rewardPeriod * 3 - $.time(3, 'days'), $.time(4, 'hours'));
   await $.recordCredits();
 
   // add liquidity
@@ -39,7 +38,7 @@ next(async () => {
   await $.recordCredits();
 
   // sleep 3 periods
-  await $.sleepAndRecord($.rewardPeriod * 3, moment.duration(4, 'hours').as('seconds'));
+  await $.sleepAndRecord($.rewardPeriod * 3, $.time(4, 'hours'));
 
   // work
   await $.job.connect($.keeper).work();
