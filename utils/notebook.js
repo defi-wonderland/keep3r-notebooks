@@ -77,6 +77,14 @@ class Notebook {
     await this.creditRecorder.record(this.job.address);
   }
 
+  async resetRecording(){
+    await this.creditRecorder.reset(this.job.address);
+  }
+
+  async sleep(totalSleepTime) {
+    await advanceTimeAndBlock(totalSleepTime);
+  }
+
   async sleepAndRecord(totalSleepTime, recordEvery) {
     let totalSlept = 0;
     await this.recordCredits();
@@ -89,10 +97,6 @@ class Notebook {
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
     await this.recordCredits();
-  }
-
-  async sleep(totalSleepTime) {
-    await advanceTimeAndBlock(totalSleepTime);
   }
 
   async draw() {
@@ -122,7 +126,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.getEventsTrace('KeeperWork')),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'KeeperWork')),
         name: 'Work',
         mode: 'markers',
         marker: {
@@ -134,7 +138,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.getEventsTrace('JobCreditsUpdated', 1)),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'JobCreditsUpdated', 1)),
         name: 'Rewarded At',
         mode: 'markers',
         marker: {
@@ -146,7 +150,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.getPeriodTrace()),
+        ...(await this.creditRecorder.getPeriodTrace()),
         name: 'Period',
         mode: 'markers',
         marker: {
@@ -158,7 +162,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.getEventsTrace('LiquidityAddition')),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'LiquidityAddition')),
         name: 'Liquidity added',
         mode: 'markers',
         marker: {
@@ -170,7 +174,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.getEventsTrace('LiquidityWithdrawal')),
+        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r,'LiquidityWithdrawal')),
         name: 'Liquidity withdrawn',
         mode: 'markers',
         marker: {
@@ -182,47 +186,6 @@ class Notebook {
     ]);
 
     $$html$$ = plot.render();
-  }
-
-  async getEventsTrace(eventName, timestampArgIndex) {
-    const events = await getPastEvents(this.w3Keep3r, eventName);
-
-    let timestampPromises;
-    if (timestampArgIndex === undefined) {
-      timestampPromises = events.map((event) => getBlockTimestamp(event.blockNumber));
-    } else {
-      // grab timestamp from event arguments
-      timestampPromises = events.map((event) => Promise.resolve(event.returnValues[timestampArgIndex]));
-    }
-
-    return Promise.all(timestampPromises).then((timestamps) => {
-      return timestamps.reduce(
-        (acc, timestamp) => ({
-          x: [...acc.x, unixToDate(timestamp)],
-          y: [...acc.y, 0],
-        }),
-        { x: [], y: [] }
-      );
-    });
-  }
-
-  async getPeriodTrace() {
-    const periodTrace = { x: [], y: [] };
-
-    const firstTimestamp = await getBlockTimestamp(constants.FORK_BLOCK_NUMBER);
-    const latestTimestamp = await getLatestBlockTimestamp();
-
-    const firstPeriod = firstTimestamp - (firstTimestamp % this.rewardPeriod) + this.rewardPeriod;
-    const lastPeriod = latestTimestamp - (latestTimestamp % this.rewardPeriod);
-
-    let currentPeriod = firstPeriod;
-    while (currentPeriod <= lastPeriod) {
-      periodTrace.x.push(unixToDate(currentPeriod));
-      periodTrace.y.push(0);
-      currentPeriod += this.rewardPeriod;
-    }
-
-    return periodTrace;
   }
 }
 
