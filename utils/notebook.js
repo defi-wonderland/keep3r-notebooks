@@ -86,6 +86,26 @@ class Notebook {
     return await ethers.provider.getBlock('latest');
   }
 
+  async fetch(contractName, address) {
+    let artifact = await artifacts.readArtifact(contractName);
+    let fetchedContract = new web3.eth.Contract(artifact.abi, address);
+    return fetchedContract
+  }
+
+  async deploy(contractName) {
+    let factory = await ethers.getContractFactory(contractName);
+    let contract = await factory.deploy();
+    return contract
+  }
+
+  async getBalance(address) {
+    return await ethers.provider.getBalance(address)
+  }
+
+  async impersonate(address){
+    return await wallet.impersonate(address);
+  }
+
   time(timeUnits, unit, asUnits) {
     if (asUnits == undefined) {
       asUnits = 'seconds';
@@ -162,7 +182,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getPeriodTrace()),
+        ...(await this.creditRecorder.getPeriodTrace(this.rewardPeriod)),
         name: 'Period',
         mode: 'markers',
         marker: {

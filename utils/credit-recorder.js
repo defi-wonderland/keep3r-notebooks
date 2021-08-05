@@ -77,20 +77,20 @@ class CreditRecorder {
     });
   }
 
-  async getPeriodTrace() {
+  async getPeriodTrace(period) {
     const periodTrace = { x: [], y: [] };
 
     const firstTimestamp = await getBlockTimestamp(constants.FORK_BLOCK_NUMBER);
     const latestTimestamp = await getLatestBlockTimestamp();
 
-    const firstPeriod = firstTimestamp - (firstTimestamp % this.rewardPeriod) + this.rewardPeriod;
-    const lastPeriod = latestTimestamp - (latestTimestamp % this.rewardPeriod);
+    const firstPeriod = firstTimestamp - (firstTimestamp % period) + period;
+    const lastPeriod = latestTimestamp - (latestTimestamp % period);
 
     let currentPeriod = firstPeriod;
     while (currentPeriod <= lastPeriod) {
       periodTrace.x.push(unixToDate(currentPeriod));
       periodTrace.y.push(0);
-      currentPeriod += this.rewardPeriod;
+      currentPeriod += period;
     }
 
     return periodTrace;
