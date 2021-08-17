@@ -1,5 +1,6 @@
 var moment = require('moment');
 var { constants } = require('../utils');
+var { advanceTimeAndBlock } = require('../utils/evm');
 var { toUnit } = require('../utils/bn');
 var { LIQUIDITIES } = require('../utils/constants');
 var { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
@@ -22,30 +23,35 @@ next(async () => {
 });
 
 next(async () => {
-  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(100));
+  for (let i = 0; i < 8; i++) {
+    await $.swapper.convertEthToExactKP3R(toUnit(0.001), { value: toUnit(1) });
+    await $.sleep($.time(24, 'hours'));
+  }
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(1));
+  await $.keep3rV1Proxy.connect($.governance)['mint(address,uint256)']($.keep3r.address, toUnit(10));
 });
 
 next(async () => {
-  const timeToSleep = moment.duration(1, 'month').as('seconds');
+  const timeToSleep = $.time(1, 'month');
   const startedToWorkAt = await getLatestBlockTimestamp();
 
   console.log('Start of simulation');
   await $.recordCredits();
 
   // sleep 1 day
-  await $.sleep(moment.duration(2, 'day').as('seconds'));
-  await $.recordCredits();
+  await $.sleep($.time(2, 'days', 'seconds'));
 
-  // work
-  await $.job.connect($.keeper).work();
-  await $.recordCredits();
-
-  // sleep 1 month, record credits every day
-  await $.sleepAndRecord($.time(1, 'month'), $.time(4, 'hours'));
-
-  // work
-  await $.job.connect($.keeper).work();
-  await $.recordCredits();
+  // work a lot
+  for (let i = 0; i < 28; i++) {
+    await $.swapper.convertEthToExactKP3R(toUnit(0.001), { value: toUnit(1) });
+    await $.recordCredits();
+    await $.job.connect($.keeper).work();
+    await $.sleep($.time(12, 'hours'));
+    await $.recordCredits();
+    if (i % 6 == 0) {
+      await $.swapper.convertEthToExactKP3R(toUnit(0.7), { value: toUnit(1) });
+    }
+  }
 
   // sleep 2 weeks, record credits every day
   await $.sleepAndRecord($.time(2, 'weeks'), $.time(4, 'hours'));

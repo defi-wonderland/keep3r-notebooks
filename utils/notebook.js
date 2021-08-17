@@ -20,8 +20,13 @@ class Notebook {
   job;
   w3Keep3r;
   rewardPeriod;
+  swapper;
+  // ethers;
 
   async setup() {
+
+    // this.ethers = ethers;
+
     await evm.reset({
       jsonRpcUrl: process.env.MAINNET_HTTPS_URL,
       blockNumber: constants.FORK_BLOCK_NUMBER,
@@ -35,6 +40,12 @@ class Notebook {
     this.governance = data.governance;
     this.keep3rV1 = data.keep3rV1;
     this.helper = data.helper;
+    this.keep3rV1Proxy = data.keep3rV1Proxy;
+
+    // setup swapper
+    this.swapper = await this.deploy('KP3RCave')
+    const swapper_artifact = await artifacts.readArtifact('KP3RCave');
+    this.w3Swapper = new web3.eth.Contract(swapper_artifact.abi, this.swapper.address);
 
     // setup job
     this.job = await common.createJobForTest(this.keep3r.address, this.jobOwner);
@@ -56,6 +67,8 @@ class Notebook {
     this.rewardPeriod = (await this.keep3r.rewardPeriodTime()).toNumber();
   }
 
+  // keep3r utils
+
   async setupLiquidity(liquidityData) {
     const whale = await wallet.impersonate(liquidityData.whale);
     const pool = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', liquidityData.pool);
@@ -74,21 +87,10 @@ class Notebook {
     await this.keep3r.connect(this.jobOwner).withdrawLiquidityFromJob(this.job.address, pool.address, amount);
   }
 
-  async recordCredits() {
-    await this.creditRecorder.record(this.job.address);
-  }
-
-  resetRecording() {
-    this.creditRecorder.reset(this.job.address);
-  }
-
-  async block(){
-    return await ethers.provider.getBlock('latest');
-  }
+  // contract utils
 
   async fetch(contractName, address) {
-    let artifact = await artifacts.readArtifact(contractName);
-    let fetchedContract = new web3.eth.Contract(artifact.abi, address);
+    let fetchedContract = await ethers.getContractAt(contractName, address);
     return fetchedContract
   }
 
@@ -105,6 +107,12 @@ class Notebook {
   async impersonate(address){
     return await wallet.impersonate(address);
   }
+
+  async block(){
+    return await ethers.provider.getBlock('latest');
+  }
+
+  // time utils
 
   time(timeUnits, unit, asUnits) {
     if (asUnits == undefined) {
@@ -129,6 +137,16 @@ class Notebook {
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
     await this.recordCredits();
+  }
+
+  // draw settings
+
+  async recordCredits() {
+    await this.creditRecorder.record(this.job.address);
+  }
+
+  resetRecording() {
+    this.creditRecorder.reset(this.job.address);
   }
 
   async draw() {
@@ -213,6 +231,18 @@ class Notebook {
           symbol: 'triangle-down',
           size: 16,
           color: 'rgb(255, 0, 0)',
+        },
+      },
+    ]);
+    plot.addTraces([
+      {
+        ...(await this.creditRecorder.getEventsTrace(this.w3Swapper, 'SwappedKP3R')),
+        name: 'KP3R Traded',
+        mode: 'markers',
+        marker: {
+          symbol: 'triangle-down',
+          size: 16,
+          color: 'rgb(0, 255, 255)',
         },
       },
     ]);

@@ -13,12 +13,6 @@ class CreditRecorder {
     this.keep3r = keep3r;
   }
 
-  /*
-  Factory
-  input -> list of views (address)
-    -> make input independant of types
-  */
-
   async record(jobAddress) {
     // adds a point of the list of views
     await this.recordCurrentCredits(jobAddress);
@@ -29,6 +23,14 @@ class CreditRecorder {
     delete this.currentCreditsTrace[jobAddress];
     delete this.totalCreditsTrace[jobAddress];
     this.blockReference = await getBlockTimestamp();
+  }
+
+  async recordView(contract,viewName,viewArgument) {
+    if (!this.currentCreditsTrace[jobAddress]) this.currentCreditsTrace[jobAddress] = { x: [], y: [] };
+
+    const viewResult = await contract[viewName](viewArgument);
+    this.currentCreditsTrace[jobAddress].x.push(unixToDate(await getLatestBlockTimestamp()));
+    this.currentCreditsTrace[jobAddress].y.push(bnToNumber(viewResult));
   }
 
   async recordCurrentCredits(jobAddress) {

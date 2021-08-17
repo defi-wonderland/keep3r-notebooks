@@ -22,7 +22,7 @@ next(async () => {
 });
 
 next(async () => {
-  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(1));
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(100));
 });
 
 next(async () => {

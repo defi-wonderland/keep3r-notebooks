@@ -10,6 +10,7 @@
     "jupyter:screen": "screen -r jupyterScreen",
     "jupyter:screen__should__": "Detach with ctrl+a+d",
     "jupyter:kill": "jupyter lab stop 8888",
+    "jupyter:clean": "jupyter nbconvert --clear-output --inplace notebooks/*.ipynb",
     "postinstall": "husky install",
     "lint:check": "cross-env prettier --check './**'",
     "lint:fix": "sort-package-json && cross-env prettier --write './**'"
