@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
+    "test": "yarn mocha:run './test/*.spec.js'",
+    "mocha:run": "cross-env TEST=true mocha",
     "jupyter": "screen -A -m -d -S jupyterScreen jupyter lab --config config/jupyter_lab_config.py",
     "jupyter:install": "pip install -r config/requirements.txt && ijsinstall",
     "jupyter:prettier": "prettier --write 'notebooks/.exports/*.js'",
@@ -23,14 +25,19 @@
     "@ethereumjs/vm": "5.4.1"
   },
   "dependencies": {
+    "@defi-wonderland/smock": "^2.0.1",
     "@jupyterlab/notebook": "3.0.11",
+    "@nomiclabs/ethereumjs-vm": "^4.2.2",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@0.3.0-beta.10",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts": "4.1.0",
+    "@uniswap/sdk": "^3.0.3",
+    "chai": "4.3.4",
     "dotenv": "10.0.0",
     "ethers": "5.4.0",
     "hardhat": "2.4.1",
     "ijavascript": "5.2.0",
+    "mocha": "9.0.1",
     "moment": "^2.29.1",
     "plotly-notebook-js": "0.1.2",
     "web3": "^1.4.0",
