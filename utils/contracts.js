@@ -6,7 +6,7 @@ const setBalance = async (address, amount) => {
 };
 
 const getPastEvents = (contract, eventName, fromBlock, options) => {
-  if(fromBlock == undefined){
+  if (fromBlock == undefined) {
     fromBlock = FORK_BLOCK_NUMBER;
   }
   return new Promise((resolve, reject) => {

@@ -24,7 +24,6 @@ class Notebook {
   // ethers;
 
   async setup() {
-
     // this.ethers = ethers;
 
     await evm.reset({
@@ -43,7 +42,7 @@ class Notebook {
     this.keep3rV1Proxy = data.keep3rV1Proxy;
 
     // setup swapper
-    this.swapper = await this.deploy('KP3RCave')
+    this.swapper = await this.deploy('KP3RCave');
     const swapper_artifact = await artifacts.readArtifact('KP3RCave');
     this.w3Swapper = new web3.eth.Contract(swapper_artifact.abi, this.swapper.address);
 
@@ -91,24 +90,24 @@ class Notebook {
 
   async fetch(contractName, address) {
     let fetchedContract = await ethers.getContractAt(contractName, address);
-    return fetchedContract
+    return fetchedContract;
   }
 
   async deploy(contractName) {
     let factory = await ethers.getContractFactory(contractName);
     let contract = await factory.deploy();
-    return contract
+    return contract;
   }
 
   async getBalance(address) {
-    return await ethers.provider.getBalance(address)
+    return await ethers.provider.getBalance(address);
   }
 
-  async impersonate(address){
+  async impersonate(address) {
     return await wallet.impersonate(address);
   }
 
-  async block(){
+  async block() {
     return await ethers.provider.getBlock('latest');
   }
 
@@ -142,7 +141,8 @@ class Notebook {
   // draw settings
 
   async recordCredits() {
-    await this.creditRecorder.record(this.job.address);
+    await this.creditRecorder.recordView(this.keep3r, 'jobLiquidityCredits', this.job.address, 0);
+    await this.creditRecorder.recordView(this.keep3r, 'totalJobCredits', this.job.address, 1);
   }
 
   resetRecording() {
@@ -153,7 +153,7 @@ class Notebook {
     const plot = Plot.createPlot([]);
     plot.addTraces([
       {
-        ...this.creditRecorder.getCurrentCredits(this.job.address),
+        ...this.creditRecorder.getViewRecording(0),
         name: 'Current credits',
         mode: 'lines',
         line: {
@@ -165,7 +165,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...this.creditRecorder.getTotalCredits(this.job.address),
+        ...this.creditRecorder.getViewRecording(1),
         name: 'Total credits',
         mode: 'lines+markers',
         line: {

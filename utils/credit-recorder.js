@@ -4,57 +4,26 @@ const { getBlockTimestamp } = require('../utils/evm');
 const { getPastEvents } = require('../utils/contracts');
 
 class CreditRecorder {
-  keep3r;
-  totalCreditsTrace = {};
-  currentCreditsTrace = {};
+  viewTrace = {};
   blockReference;
 
-  constructor(keep3r) {
-    this.keep3r = keep3r;
-  }
-
-  async record(jobAddress) {
-    // adds a point of the list of views
-    await this.recordCurrentCredits(jobAddress);
-    await this.recordTotalCredits(jobAddress);
-  }
-
-  async reset(jobAddress) {
-    delete this.currentCreditsTrace[jobAddress];
-    delete this.totalCreditsTrace[jobAddress];
+  async reset() {
+    delete this.viewTrace;
     this.blockReference = await getBlockTimestamp();
   }
 
-  async recordView(contract,viewName,viewArgument) {
-    if (!this.currentCreditsTrace[jobAddress]) this.currentCreditsTrace[jobAddress] = { x: [], y: [] };
+  async recordView(contract, viewName, viewArgument, id) {
+    if (!this.viewTrace[id]) this.viewTrace[id] = { x: [], y: [] };
 
     const viewResult = await contract[viewName](viewArgument);
-    this.currentCreditsTrace[jobAddress].x.push(unixToDate(await getLatestBlockTimestamp()));
-    this.currentCreditsTrace[jobAddress].y.push(bnToNumber(viewResult));
+    this.viewTrace[id].x.push(unixToDate(await getLatestBlockTimestamp()));
+    this.viewTrace[id].y.push(bnToNumber(viewResult));
   }
 
-  async recordCurrentCredits(jobAddress) {
-    if (!this.currentCreditsTrace[jobAddress]) this.currentCreditsTrace[jobAddress] = { x: [], y: [] };
-
-    const currentCredits = await this.keep3r.jobLiquidityCredits(jobAddress);
-    this.currentCreditsTrace[jobAddress].x.push(unixToDate(await getLatestBlockTimestamp()));
-    this.currentCreditsTrace[jobAddress].y.push(bnToNumber(currentCredits));
-  }
-
-  async recordTotalCredits(jobAddress) {
-    if (!this.totalCreditsTrace[jobAddress]) this.totalCreditsTrace[jobAddress] = { x: [], y: [] };
-
-    const totalCredits = await this.keep3r.totalJobCredits(jobAddress);
-    this.totalCreditsTrace[jobAddress].x.push(unixToDate(await getLatestBlockTimestamp()));
-    this.totalCreditsTrace[jobAddress].y.push(bnToNumber(totalCredits));
-  }
-
-  getCurrentCredits(jobAddress) {
-    return this.currentCreditsTrace[jobAddress];
-  }
-
-  getTotalCredits(jobAddress) {
-    return this.totalCreditsTrace[jobAddress];
+  getViewRecording(id) {
+    if(this.viewTrace){
+      return this.viewTrace[id];
+    }
   }
 
   async getEventsTrace(eventContract, eventName, timestampArgIndex) {
