@@ -11,9 +11,17 @@ describe('mocking helper', () => {
     helperFactory = await smock.mock('Keep3rHelper');
     helper = await helperFactory.deploy();
 
+    erc20Factory = await smock.mock('ERC20');
+    erc20 = await erc20Factory.deploy('myToken', 'TKN');
+
     /// @dev When working with interfaces a fake in an address is needed for this
     // poolFactory = await smock.mock('IUniswapV3Pool')
     // pool = poolFactory.deploy(address = '0xF4aaEe4E6FfC79252f131635A0DBD6D630C69C12')
+  });
+
+  it.only('should fake totalSuppy', async () => {
+    erc20.totalSupply.returns(1);
+    expect((await erc20.callStatic.totalSupply()).toNumber()).to.be.eq(1);
   });
 
   it('should set the return', async () => {
