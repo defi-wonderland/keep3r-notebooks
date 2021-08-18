@@ -6,11 +6,10 @@ const { unixToDate } = require('../utils/jupyter');
 const { ethers, web3, artifacts } = require('hardhat');
 const moment = require('moment');
 const Plot = require('plotly-notebook-js');
-const { CreditRecorder } = require('../utils/credit-recorder');
+const { notebookRecorder } = require('../utils/notebook-recorder');
 const { advanceTimeAndBlock } = require('../utils/evm');
 
 class Notebook {
-  creditRecorder;
   jobOwner;
   keeper;
   keep3r;
@@ -21,11 +20,8 @@ class Notebook {
   w3Keep3r;
   rewardPeriod;
   swapper;
-  // ethers;
 
   async setup() {
-    // this.ethers = ethers;
-
     await evm.reset({
       jsonRpcUrl: process.env.MAINNET_HTTPS_URL,
       blockNumber: constants.FORK_BLOCK_NUMBER,
@@ -60,7 +56,7 @@ class Notebook {
     await this.keep3r.connect(this.keeper).activate(constants.KP3R_V1_ADDRESS);
 
     // setup credit recorder
-    this.creditRecorder = new CreditRecorder(this.keep3r);
+    this.notebookRecorder = new notebookRecorder();
 
     // setup reward period
     this.rewardPeriod = (await this.keep3r.rewardPeriodTime()).toNumber();
@@ -141,19 +137,19 @@ class Notebook {
   // draw settings
 
   async recordCredits() {
-    await this.creditRecorder.recordView(this.keep3r, 'jobLiquidityCredits', this.job.address, 0);
-    await this.creditRecorder.recordView(this.keep3r, 'totalJobCredits', this.job.address, 1);
+    await this.notebookRecorder.recordView(this.keep3r, 'jobLiquidityCredits', this.job.address, 0);
+    await this.notebookRecorder.recordView(this.keep3r, 'totalJobCredits', this.job.address, 1);
   }
 
   resetRecording() {
-    this.creditRecorder.reset(this.job.address);
+    this.notebookRecorder.reset();
   }
 
   async draw() {
     const plot = Plot.createPlot([]);
     plot.addTraces([
       {
-        ...this.creditRecorder.getViewRecording(0),
+        ...this.notebookRecorder.getViewRecording(0),
         name: 'Current credits',
         mode: 'lines',
         line: {
@@ -165,7 +161,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...this.creditRecorder.getViewRecording(1),
+        ...this.notebookRecorder.getViewRecording(1),
         name: 'Total credits',
         mode: 'lines+markers',
         line: {
@@ -176,7 +172,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'KeeperWork')),
+        ...(await this.notebookRecorder.getEventsTrace(this.w3Keep3r, 'KeeperWork')),
         name: 'Work',
         mode: 'markers',
         marker: {
@@ -188,7 +184,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'JobCreditsUpdated', 1)),
+        ...(await this.notebookRecorder.getEventsTrace(this.w3Keep3r, 'JobCreditsUpdated', 1)),
         name: 'Rewarded At',
         mode: 'markers',
         marker: {
@@ -200,7 +196,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getPeriodTrace(this.rewardPeriod)),
+        ...(await this.notebookRecorder.getPeriodTrace(this.rewardPeriod)),
         name: 'Period',
         mode: 'markers',
         marker: {
@@ -212,7 +208,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityAddition')),
+        ...(await this.notebookRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityAddition')),
         name: 'Liquidity added',
         mode: 'markers',
         marker: {
@@ -224,7 +220,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityWithdrawal')),
+        ...(await this.notebookRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityWithdrawal')),
         name: 'Liquidity withdrawn',
         mode: 'markers',
         marker: {
@@ -236,7 +232,7 @@ class Notebook {
     ]);
     plot.addTraces([
       {
-        ...(await this.creditRecorder.getEventsTrace(this.w3Swapper, 'SwappedKP3R')),
+        ...(await this.notebookRecorder.getEventsTrace(this.w3Swapper, 'SwappedKP3R')),
         name: 'KP3R Traded',
         mode: 'markers',
         marker: {

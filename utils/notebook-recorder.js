@@ -3,7 +3,7 @@ const { constants } = require('../utils');
 const { getBlockTimestamp } = require('../utils/evm');
 const { getPastEvents } = require('../utils/contracts');
 
-class CreditRecorder {
+class notebookRecorder {
   viewTrace = {};
   blockReference;
 
@@ -21,7 +21,7 @@ class CreditRecorder {
   }
 
   getViewRecording(id) {
-    if(this.viewTrace){
+    if (this.viewTrace) {
       return this.viewTrace[id];
     }
   }
@@ -68,4 +68,4 @@ class CreditRecorder {
   }
 }
 
-exports.CreditRecorder = CreditRecorder;
+exports.notebookRecorder = notebookRecorder;
