@@ -38,9 +38,9 @@ class Notebook {
     this.keep3rV1Proxy = data.keep3rV1Proxy;
 
     // setup swapper
-    this.swapper = await this.deploy('KP3RCave');
-    const swapper_artifact = await artifacts.readArtifact('KP3RCave');
-    this.w3Swapper = new web3.eth.Contract(swapper_artifact.abi, this.swapper.address);
+    // this.swapper = await this.deploy('KP3RCave');
+    // const swapper_artifact = await artifacts.readArtifact('KP3RCave');
+    // this.w3Swapper = new web3.eth.Contract(swapper_artifact.abi, this.swapper.address);
 
     // setup job
     this.job = await common.createJobForTest(this.keep3r.address, this.jobOwner);
@@ -230,18 +230,18 @@ class Notebook {
         },
       },
     ]);
-    plot.addTraces([
-      {
-        ...(await this.notebookRecorder.getEventsTrace(this.w3Swapper, 'SwappedKP3R')),
-        name: 'KP3R Traded',
-        mode: 'markers',
-        marker: {
-          symbol: 'triangle-down',
-          size: 16,
-          color: 'rgb(0, 255, 255)',
-        },
-      },
-    ]);
+    // plot.addTraces([
+    //   {
+    //     ...(await this.notebookRecorder.getEventsTrace(this.w3Swapper, 'SwappedKP3R')),
+    //     name: 'KP3R Traded',
+    //     mode: 'markers',
+    //     marker: {
+    //       symbol: 'triangle-down',
+    //       size: 16,
+    //       color: 'rgb(0, 255, 255)',
+    //     },
+    //   },
+    // ]);
 
     $$html$$ = plot.render();
   }

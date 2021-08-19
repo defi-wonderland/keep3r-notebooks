@@ -23,7 +23,7 @@ next(async () => {
 });
 
 next(async () => {
-  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(100));
+  await $.addLiquidityToJob(liquidityPool, liquidityWhale, toUnit(10));
 });
 
 next(async () => {
@@ -53,7 +53,7 @@ next(async () => {
   await $.recordCredits();
 
   // work a lot
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 48; i++) {
     await $.recordCredits();
     await $.job.connect($.keeper).work();
     await $.sleep($.time(12, 'hours'));
