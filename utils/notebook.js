@@ -89,9 +89,9 @@ class Notebook {
     return fetchedContract;
   }
 
-  async deploy(contractName) {
+  async deploy(contractName, constructor=null) {
     let factory = await ethers.getContractFactory(contractName);
-    let contract = await factory.deploy();
+    let contract = await factory.deploy(constructor);
     return contract;
   }
 
