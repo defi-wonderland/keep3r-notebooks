@@ -30,6 +30,29 @@ next(async () => {
     await uniPool.increaseObservationCardinalityNext(0x0a1)
 });
 
+next(async()=>{
+    console.log(await uniPool.slot0())
+})
+
+uniPool.observe([432000])
+
+uniPool.observations(0)
+
+uniPool.observations(0)
+
+next(async()=>{
+    // make a Swap
+    await uniRouter.connect($.jobOwner).exactInputSingle([$.keep3rV1.address,WETH9,10000,$.jobOwner.address,2638281696,1,0,0])
+})
+
+$.sleep(100)
+
+$.job.connect($.keeper).work();
+
+
+
+
+
 next(async () => {  
     
     // fund the jobOwner
@@ -100,6 +123,10 @@ next(async () => {
 next(async()=>{
     console.log(await uniPool.slot0())
 })
+
+uniPool.observations(10)
+
+uniPool.observations(9)
 
 next(async () => {
     await $.draw();

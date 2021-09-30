@@ -5,8 +5,16 @@ require('dotenv').config();
 module.exports = {
   defaultNetwork: 'hardhat',
   networks: {},
+  hardhat: {
+    allowUnlimitedContractSize: true,
+  },
+  mainnet: {
+    url: process.env.MAINNET_HTTPS_URL,
+    accounts: [process.env.MAINNET_PRIVATE_KEY],
+    gasPrice: 'auto',
+  },
   solidity: {
-    version: '0.8.6',
+    version: '0.8.7',
     settings: {
       optimizer: {
         enabled: true,

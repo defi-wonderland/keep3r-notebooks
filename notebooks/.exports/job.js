@@ -15,20 +15,42 @@ next(async () => {
     await $.setup();
 });
 
-pool = '0x11b7a6bc0259ed6cf9db8f499988f9ecc7167bf5'
-WETH9 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
-router = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
-
 next(async () => {
-    uniPool = await $.fetch('IUniswapV3Pool',pool)
-    
-    kp3rPool = await $.deploy('Keep3rV1Pair',pool)
-    uniRouter = await $.fetch('ISwapRouter',router)
-    weth = await $.fetch('WETH9',WETH9)
-    
-    // increase cardinality of the pool
-    await uniPool.increaseObservationCardinalityNext(0x0a1)
+    oracleFactory = await $.fetch('Keep3rV2OracleFactory','0xaed599aadfee8e32cedb59db2b1120d33a7bacfd')
+    oracle = await $.fetch('Keep3rV2Oracle','0xe20B3f175F9f4e1EDDf333f96b72Bba138c9e83a')
+    uniV2Pair = await $.fetch('UniswapV2Pair','0xaf988aff99d3d0cb870812c325c588d8d8cb7de8')
 });
+
+oracle.length()
+
+oracle.observations(4719)
+
+next(async()=>{
+    await oracle.connect(await $.impersonate(oracleFactory.address)).update({gasPrice:0})    
+})
+
+uniV2Pair.getReserves()
+
+$.sleep(3600)
+
+1628028923 - 1628025092 
+
+uniV2Pair.sync()
+
+
+
+next(async()=>{
+    // make a Swap
+    await uniRouter.connect($.jobOwner).exactInputSingle([$.keep3rV1.address,WETH9,10000,$.jobOwner.address,2638281696,1,0,0])
+})
+
+$.sleep(100)
+
+$.job.connect($.keeper).work();
+
+
+
+
 
 next(async () => {  
     
@@ -100,6 +122,10 @@ next(async () => {
 next(async()=>{
     console.log(await uniPool.slot0())
 })
+
+uniPool.observations(10)
+
+uniPool.observations(9)
 
 next(async () => {
     await $.draw();

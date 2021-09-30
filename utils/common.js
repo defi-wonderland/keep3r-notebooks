@@ -1,44 +1,116 @@
 const contracts = require('./contracts');
-const { KP3R_V1_ADDRESS, KP3R_V1_GOVERNANCE_ADDRESS } = require('./constants');
+const { KP3R_V1_ADDRESS, KP3R_V1_GOVERNANCE_ADDRESS, UNISWAP_V3_ORACLE_POOL, UNISWAP_V3_ROUTER, WETH_ADDRESS } = require('./constants');
 const wallet = require('./wallet');
 const { toUnit } = require('./bn');
-const { ethers } = require('hardhat');
+var { advanceTimeAndBlock } = require('./evm')
+const { ethers, web3, artifacts } = require('hardhat');
+
+/*
+setup: exports keep3r deployed and running
+*/
+
+class Keep3r {
+  governance;
+  keeper;
+  v2;
+  v1;
+  helper;
+  library;
+  proxy;
+  pool;
+
+  async setup() {
+     const data = await setupKeep3r();
+     this.governance = data.governance;
+     this.v2 = data.keep3r;
+     this.v1 = data.keep3rV1;
+     this.proxy = data.keep3rV1Proxy;
+     this.helper = data.helper;
+     this.library = data.library;
+
+     // setup web3 keep3r for events
+     const artifact = await artifacts.readArtifact('Keep3r');
+     this.v2.web3 = new web3.eth.Contract(artifact.abi, data.keep3r.address);
+
+     this.pool = await setupKeep3rPool()
+     data.keep3r.connect(data.governance).approveLiquidity(this.pool.address)
+
+     this.keeper = await activateKeeper(data.keep3r);
+  }
+}
+
+const setupKeep3rPool = async () => {
+  const pairManagerFactory = await ethers.getContractFactory('UniV3PairManager')
+  const pairManager = await pairManagerFactory.deploy(UNISWAP_V3_ORACLE_POOL, KP3R_V1_GOVERNANCE_ADDRESS)
+
+  const uniV3Pool = await ethers.getContractAt('IUniswapV3Pool', UNISWAP_V3_ORACLE_POOL )
+  const uniV3Router = await ethers.getContractAt('ISwapRouter', UNISWAP_V3_ROUTER)
+
+  return pairManager
+}
+
+const activateKeeper = async (keep3r) => {
+  const keeper = await wallet.generateRandom();
+  await contracts.setBalance(keeper.address, toUnit(1000));
+  await keep3r.connect(keeper).bond(KP3R_V1_ADDRESS, 0);
+  await evm.advanceTimeAndBlock(moment.duration(3, 'days').as('seconds'));
+  await keep3r.connect(keeper).activate(KP3R_V1_ADDRESS);
+  return keeper;
+}
 
 const setupKeep3r = async () => {
   // create governance with some eth
-  const governance = await wallet.impersonate(wallet.generateRandomAddress());
+  const governance = await wallet.impersonate(KP3R_V1_GOVERNANCE_ADDRESS);
   await contracts.setBalance(governance._address, toUnit(1000));
 
   // deploy proxy and set it as Keep3rV1 governance
   const { keep3rV1, keep3rV1Proxy } = await setupKeep3rV1(governance);
 
-  const helperFactory = await ethers.getContractFactory('Keep3rHelper');
-  const keep3rFactory = await ethers.getContractFactory('Keep3r');
+  const library = await (await ethers.getContractFactory('Keep3rLibrary')).deploy();
+  const libraries = {
+    libraries: {
+      Keep3rLibrary: library.address,
+    },
+  }
+  const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest', libraries);
+  const keep3rFactory = await ethers.getContractFactory('Keep3r', libraries);
+
+  const currentNonce = await ethers.provider.getTransactionCount(governance._address);
+  const keeperV2Address = ethers.utils.getContractAddress({ from: governance._address, nonce: currentNonce + 1 });
 
   // deploy Keep3rHelper and Keep3r contract
-  const helper = await helperFactory.deploy();
-  const keep3r = await keep3rFactory.connect(governance).deploy(helper.address, keep3rV1.address, keep3rV1Proxy.address);
+  const helper = await helperFactory.connect(governance).deploy(keeperV2Address);
+
+  /* TODO: fix deployment script */
+  const keep3r = await keep3rFactory.connect(governance).deploy(
+    governance._address,
+    helper.address,
+    keep3rV1.address,
+    keep3rV1Proxy.address,
+    UNISWAP_V3_ORACLE_POOL
+  );
+
+  await helper.setBaseFee(50000000000) // 50 GWei
 
   // set Keep3r as proxy minter
   await keep3rV1Proxy.connect(governance).setMinter(keep3r.address);
 
-  // give some eth to Keep3r and to Keep3rV1
-  await contracts.setBalance(keep3r.address, toUnit(1000));
-  await contracts.setBalance(keep3rV1.address, toUnit(1000));
-
-  return { governance, keep3r, keep3rV1, keep3rV1Proxy, helper };
+  return { governance, keep3r, keep3rV1, keep3rV1Proxy, helper, library };
 };
 
 const setupKeep3rV1 = async (governance) => {
   // get Keep3rV1 and it's governance
   const keep3rV1 = await ethers.getContractAt('IKeep3rV1', KP3R_V1_ADDRESS);
-  const keep3rV1Governance = await wallet.impersonate(KP3R_V1_GOVERNANCE_ADDRESS);
 
-  // deploy proxy
-  const keep3rV1Proxy = await (await ethers.getContractFactory('Keep3rV1Proxy')).connect(governance).deploy(keep3rV1.address);
+  // fetch proxy
+  // WARNING: retrieve Keep3rV1Proxy artifact from repo
+  const keep3rV1ProxyFactory = await ethers.getContractFactory('Keep3rV1Proxy');
+  const keep3rV1Proxy = await keep3rV1ProxyFactory.deploy(KP3R_V1_GOVERNANCE_ADDRESS, KP3R_V1_ADDRESS)
+  // TODO: unable to used deployed proxy because of London fork
+  // await ethers.getContractAt('IKeep3rV1Proxy','0xFC48aC750959d5d5aE9A4bb38f548A7CA8763F8d')
 
   // set proxy as Keep3rV1 governance
-  await keep3rV1.connect(keep3rV1Governance).setGovernance(keep3rV1Proxy.address, { gasPrice: 0 });
+  await keep3rV1.connect(governance).setGovernance(keep3rV1Proxy.address, { gasPrice: 500000000 });
   await keep3rV1Proxy.connect(governance).acceptKeep3rV1Governance();
 
   return { keep3rV1, keep3rV1Proxy };
@@ -50,5 +122,22 @@ const createJobForTest = async (keep3rAddress, jobOwner) => {
   return await jobFactory.connect(jobOwner).deploy(keep3rAddress);
 };
 
+// keep3r utils
+
+const setupLiquidity = async(liquidityData) => {
+  const whale = await wallet.impersonate(liquidityData.whale);
+  const pool = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', liquidityData.pool);
+  await pool.connect(whale).transfer(this.jobOwner.address, 1);
+  await this.keep3r.connect(this.governance).approveLiquidity(pool.address);
+  return { whale, pool };
+}
+
+const addLiquidityToJob = async(pool, whale, amount) => {
+  await pool.connect(whale).transfer(this.jobOwner.address, amount, { gasPrice: 0 });
+  await pool.connect(this.jobOwner).approve(this.keep3r.address, amount);
+  await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, pool.address, amount);
+}
+
+exports.Keep3r = Keep3r
 exports.setupKeep3r = setupKeep3r;
 exports.createJobForTest = createJobForTest;
