@@ -73,7 +73,8 @@ next(async () => {
 });
 
 next(async () => {
-  tx = await job.connect(keep3r.keeper).workHard(10);
+  advanceTimeAndBlock(3600);
+  tx = await job.connect(keep3r.keeper).work();
   wait = await tx.wait();
   console.log(await keep3r.v2.bonds(keep3r.keeper.address, keep3r.v1.address));
 });
