@@ -7,6 +7,7 @@ module.exports = {
   networks: {},
   hardhat: {
     allowUnlimitedContractSize: true,
+    gasPrice: 'auto',
   },
   mainnet: {
     url: process.env.MAINNET_HTTPS_URL,

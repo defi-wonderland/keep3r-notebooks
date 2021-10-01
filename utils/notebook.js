@@ -32,7 +32,6 @@ class Notebook {
     this.notebookRecorder = new notebookRecorder();
   }
 
-
   // contract utils
 
   async fetch(contractName, address) {
@@ -51,7 +50,7 @@ class Notebook {
   }
 
   async newSigner() {
-    let signer = await wallet.generateRandom()
+    let signer = await wallet.generateRandom();
     await contracts.setBalance(signer.address, toUnit(1000));
     return signer;
   }

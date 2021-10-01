@@ -1,7 +1,6 @@
 const { network } = require('hardhat');
 const { ethers } = require('hardhat');
 
-
 class SnapshotManager {
   snapshots = {};
 
@@ -17,10 +16,10 @@ class SnapshotManager {
   }
 
   async takeSnapshot() {
-    return (await network.provider.request({
+    return await network.provider.request({
       method: 'evm_snapshot',
       params: [],
-    }));
+    });
   }
 
   async revertSnapshot(id) {
@@ -77,7 +76,6 @@ const getLatestBlockTimestamp = async () => {
 const getBlockTimestamp = async (blockNumber) => {
   return (await ethers.provider.getBlock(blockNumber)).timestamp;
 };
-
 
 exports.SnapshotManager = SnapshotManager;
 exports.advanceTimeAndBlock = advanceTimeAndBlock;

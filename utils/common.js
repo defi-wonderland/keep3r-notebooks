@@ -2,7 +2,7 @@ const contracts = require('./contracts');
 const { KP3R_V1_ADDRESS, KP3R_V1_GOVERNANCE_ADDRESS, UNISWAP_V3_ORACLE_POOL, UNISWAP_V3_ROUTER, WETH_ADDRESS } = require('./constants');
 const wallet = require('./wallet');
 const { toUnit } = require('./bn');
-var { advanceTimeAndBlock } = require('./evm')
+var { advanceTimeAndBlock } = require('./evm');
 const { ethers, web3, artifacts } = require('hardhat');
 
 /*
@@ -20,34 +20,34 @@ class Keep3r {
   pool;
 
   async setup() {
-     const data = await setupKeep3r();
-     this.governance = data.governance;
-     this.v2 = data.keep3r;
-     this.v1 = data.keep3rV1;
-     this.proxy = data.keep3rV1Proxy;
-     this.helper = data.helper;
-     this.library = data.library;
+    const data = await setupKeep3r();
+    this.governance = data.governance;
+    this.v2 = data.keep3r;
+    this.v1 = data.keep3rV1;
+    this.proxy = data.keep3rV1Proxy;
+    this.helper = data.helper;
+    this.library = data.library;
 
-     // setup web3 keep3r for events
-     const artifact = await artifacts.readArtifact('Keep3r');
-     this.v2.web3 = new web3.eth.Contract(artifact.abi, data.keep3r.address);
+    // setup web3 keep3r for events
+    const artifact = await artifacts.readArtifact('Keep3r');
+    this.v2.web3 = new web3.eth.Contract(artifact.abi, data.keep3r.address);
 
-     this.pool = await setupKeep3rPool()
-     data.keep3r.connect(data.governance).approveLiquidity(this.pool.address)
+    this.pool = await setupKeep3rPool();
+    data.keep3r.connect(data.governance).approveLiquidity(this.pool.address);
 
-     this.keeper = await activateKeeper(data.keep3r);
+    this.keeper = await activateKeeper(data.keep3r);
   }
 }
 
 const setupKeep3rPool = async () => {
-  const pairManagerFactory = await ethers.getContractFactory('UniV3PairManager')
-  const pairManager = await pairManagerFactory.deploy(UNISWAP_V3_ORACLE_POOL, KP3R_V1_GOVERNANCE_ADDRESS)
+  const pairManagerFactory = await ethers.getContractFactory('UniV3PairManager');
+  const pairManager = await pairManagerFactory.deploy(UNISWAP_V3_ORACLE_POOL, KP3R_V1_GOVERNANCE_ADDRESS);
 
-  const uniV3Pool = await ethers.getContractAt('IUniswapV3Pool', UNISWAP_V3_ORACLE_POOL )
-  const uniV3Router = await ethers.getContractAt('ISwapRouter', UNISWAP_V3_ROUTER)
+  const uniV3Pool = await ethers.getContractAt('IUniswapV3Pool', UNISWAP_V3_ORACLE_POOL);
+  const uniV3Router = await ethers.getContractAt('ISwapRouter', UNISWAP_V3_ROUTER);
 
-  return pairManager
-}
+  return pairManager;
+};
 
 const activateKeeper = async (keep3r) => {
   const keeper = await wallet.generateRandom();
@@ -56,7 +56,7 @@ const activateKeeper = async (keep3r) => {
   await evm.advanceTimeAndBlock(moment.duration(3, 'days').as('seconds'));
   await keep3r.connect(keeper).activate(KP3R_V1_ADDRESS);
   return keeper;
-}
+};
 
 const setupKeep3r = async () => {
   // create governance with some eth
@@ -71,7 +71,7 @@ const setupKeep3r = async () => {
     libraries: {
       Keep3rLibrary: library.address,
     },
-  }
+  };
   const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest', libraries);
   const keep3rFactory = await ethers.getContractFactory('Keep3r', libraries);
 
@@ -81,16 +81,11 @@ const setupKeep3r = async () => {
   // deploy Keep3rHelper and Keep3r contract
   const helper = await helperFactory.connect(governance).deploy(keeperV2Address);
 
-  /* TODO: fix deployment script */
-  const keep3r = await keep3rFactory.connect(governance).deploy(
-    governance._address,
-    helper.address,
-    keep3rV1.address,
-    keep3rV1Proxy.address,
-    UNISWAP_V3_ORACLE_POOL
-  );
+  const keep3r = await keep3rFactory
+    .connect(governance)
+    .deploy(governance._address, helper.address, keep3rV1.address, keep3rV1Proxy.address, UNISWAP_V3_ORACLE_POOL);
 
-  await helper.setBaseFee(50000000000) // 50 GWei
+  await helper.setBaseFee(50000000000); // 50 GWei
 
   // set Keep3r as proxy minter
   await keep3rV1Proxy.connect(governance).setMinter(keep3r.address);
@@ -105,7 +100,7 @@ const setupKeep3rV1 = async (governance) => {
   // fetch proxy
   // WARNING: retrieve Keep3rV1Proxy artifact from repo
   const keep3rV1ProxyFactory = await ethers.getContractFactory('Keep3rV1Proxy');
-  const keep3rV1Proxy = await keep3rV1ProxyFactory.deploy(KP3R_V1_GOVERNANCE_ADDRESS, KP3R_V1_ADDRESS)
+  const keep3rV1Proxy = await keep3rV1ProxyFactory.deploy(KP3R_V1_GOVERNANCE_ADDRESS, KP3R_V1_ADDRESS);
   // TODO: unable to used deployed proxy because of London fork
   // await ethers.getContractAt('IKeep3rV1Proxy','0xFC48aC750959d5d5aE9A4bb38f548A7CA8763F8d')
 
@@ -124,20 +119,34 @@ const createJobForTest = async (keep3rAddress, jobOwner) => {
 
 // keep3r utils
 
-const setupLiquidity = async(liquidityData) => {
+const setupLiquidity = async (liquidityData) => {
   const whale = await wallet.impersonate(liquidityData.whale);
   const pool = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', liquidityData.pool);
   await pool.connect(whale).transfer(this.jobOwner.address, 1);
   await this.keep3r.connect(this.governance).approveLiquidity(pool.address);
   return { whale, pool };
-}
+};
 
-const addLiquidityToJob = async(pool, whale, amount) => {
+const addLiquidityToJob = async (pool, whale, amount) => {
   await pool.connect(whale).transfer(this.jobOwner.address, amount, { gasPrice: 0 });
   await pool.connect(this.jobOwner).approve(this.keep3r.address, amount);
   await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, pool.address, amount);
-}
+};
 
-exports.Keep3r = Keep3r
+// uniswap utils
+
+const makeASwap = async (provider, fromToken, toToken, receiver, fee, amount) => {
+  uniRouter = await ethers.getContractAt('ISwapRouter', '0xE592427A0AEce92De3Edee1F18E0157C05861564');
+
+  await keep3r.proxy.connect(keep3r.governance)['mint(address,uint256)'](provider.address, toUnit(100));
+  await keep3r.v1.connect(provider).approve(uniRouter.address, toUnit(100));
+
+  const blockTimestamp = (await ethers.provider.getBlock('latest')).timestamp;
+
+  await uniRouter.connect(provider).exactInputSingle([fromToken, toToken, 10000, receiver, blockTimestamp + 100, amount, toUnit(0.0001), 0]);
+};
+
+exports.Keep3r = Keep3r;
 exports.setupKeep3r = setupKeep3r;
 exports.createJobForTest = createJobForTest;
+exports.makeASwap = makeASwap;
