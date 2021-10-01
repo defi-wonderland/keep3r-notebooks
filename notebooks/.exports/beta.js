@@ -60,16 +60,6 @@ next(async () => {
   console.log('kLP minted', bnToNumber(klpBalance));
 });
 
-// next(async()=>{
-//     /* Notice:
-//         at current block, pools cardinality is 1
-//         provider have just minted a position in the pool
-//         latest twap accumulator is 1s ago
-//         UniswapV3Pool will return 'OLD' and provide no credits
-//     */
-//     await advanceTimeAndBlock(3 * 432000)
-// })
-
 next(async () => {
   await keep3r.v2.connect(provider).addJob(job.address);
   await keep3r.pool.connect(provider).approve(keep3r.v2.address, klpBalance);
@@ -87,9 +77,3 @@ next(async () => {
   wait = await tx.wait();
   console.log(await keep3r.v2.bonds(keep3r.keeper.address, keep3r.v1.address));
 });
-
-advanceTimeAndBlock(432000);
-
-job.connect(keep3r.keeper).workHard(10);
-
-keep3r.v2.bonds(keep3r.keeper.address, keep3r.v1.address);
