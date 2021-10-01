@@ -13,7 +13,7 @@ oneHundred = toUnit(100)
 
 var $ = new Notebook();
 var keep3r = new Keep3r();
-var snapshots = new evm.SnapshotManager()
+//var snapshots = new evm.SnapshotManager()
 
 clear();
 
@@ -38,44 +38,6 @@ next(async()=>{
     console.log('previous tickQuote', 1/quote)
 })
 
-
-
-keep3r.pool.callStatic.viewPosition()
-
-uniV3Pool.positions(bytes32)
-
-uniV3Pool.observe([0,tickTime])
-
-1.0001**((0x2f6c58c300-0x2c7f25d700)/432000)
-
-next(async()=>{
-    lib = await (await ethers.getContractFactory('LiquidityAmountsTest')).deploy()
-})
-
-lib.getAmountsForLiquidity(uint160,uint160,uint160,uint128)
-
-next(async()=>{
-upper = await lib.getSqrtRatioAtTick(887200)
-lower = await lib.getSqrtRatioAtTick(-887200)
-    console.log(await lib.getAmount0ForLiquidity(upper, lower,liquidity))
-})
-
-
-lib.address
-
-lib.getSqrtRatioAtTick(0)
-
-0x01000000000000000000000000
-0xfffcb933bd6fad37aa2d162e
-
-lib.getTickAtSqrtRatio('0x01000000000000000000000000')
-
-lib.getAmount0ForLiquidity(0x01000000000000000000000000,4410618292, liquidity)
-
-0xda4555e689b5828d70c63fac8dd92832/10**18
-
-
-
 next(async()=>{
     // mints 100 KP3R and 100 WETH to provider and approves spendings
     await keep3r.proxy.connect(keep3r.governance)['mint(address,uint256)'](provider.address, oneHundred)
@@ -98,6 +60,30 @@ next(async()=>{
     console.log('kLP minted', bnToNumber(klpBalance))
 })
 
+quote
+
+(oneHundred / (quote)**0.5)/10**18
+
+0x01440295848ef91d29/10**18
+
+
+
+100/(18)**(0.5)
+
+
+
+keep3r.pool.slot0()
+
+keep3r.pool.callStatic.viewPosition()
+
+uniV3Pool.slot0()
+
+keep3r.pool.principal(10)
+
+0x04
+
+uniV3Pool.positions('0xd47863c2d017c4628bf92851402add49493602bb37103452aae69ce6b7a1563a')
+
 next(async()=>{
     /* Notice:
         at current block, pools cardinality is 1
@@ -108,23 +94,23 @@ next(async()=>{
     await advanceTimeAndBlock(432000)
 })
 
-// // Make a small swap
-// next(async()=>{
-//     uniRouter = await ethers.getContractAt('ISwapRouter','0xE592427A0AEce92De3Edee1F18E0157C05861564')
+// Make a small swap
+next(async()=>{
+    uniRouter = await ethers.getContractAt('ISwapRouter','0xE592427A0AEce92De3Edee1F18E0157C05861564')
     
-//     await keep3rproxy.connect(keep3rgovernance)['mint(address,uint256)'](provider.address, toUnit(100))
-//     await keep3rv1.connect(provider).approve(uniRouter.address,toUnit(100))
+    await keep3r.proxy.connect(keep3r.governance)['mint(address,uint256)'](provider.address, toUnit(100))
+    await keep3r.v1.connect(provider).approve(uniRouter.address,toUnit(100))
     
-//     await uniRouter.connect(provider).exactInputSingle([
-//                 keep3rv1.address,
-//                 '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-//                 10000,
-//                 keep3rv1.address,
-//                 1628713433+100000000,
-//                 toUnit(0.01),
-//                 toUnit(0.0001),
-//                 0])
-// })
+    await uniRouter.connect(provider).exactInputSingle([
+                keep3r.v1.address,
+                '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+                10000,
+                keep3r.v1.address,
+                1628713433+100000000,
+                toUnit(100),
+                toUnit(0.0001),
+                0])
+})
 
 
 
