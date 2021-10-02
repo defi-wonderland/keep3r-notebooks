@@ -1,15 +1,16 @@
 const { unixToDate, bnToNumber } = require('../utils/jupyter');
 const { constants } = require('../utils');
-const { getBlockTimestamp } = require('../utils/evm');
+const { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
 const { getPastEvents } = require('../utils/contracts');
 
-class notebookRecorder {
+class NotebookRecorder {
   viewTrace = {};
   blockReference;
 
   async reset() {
     delete this.viewTrace;
     this.blockReference = await getBlockTimestamp();
+    this.viewTrace = {}
   }
 
   async recordView(contract, viewName, viewArgument, id) {
@@ -68,4 +69,4 @@ class notebookRecorder {
   }
 }
 
-exports.notebookRecorder = notebookRecorder;
+exports.NotebookRecorder = NotebookRecorder;

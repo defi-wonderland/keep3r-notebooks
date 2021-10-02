@@ -1,26 +1,18 @@
 require('dotenv').config({ path: '../.env' });
 const { evm, wallet, constants, contracts, common } = require('../utils');
 const { getBlockTimestamp } = require('../utils/evm');
+const { toUnit } = require('../utils/bn')
 const { getPastEvents } = require('../utils/contracts');
 const { unixToDate } = require('../utils/jupyter');
 const { ethers, web3, artifacts } = require('hardhat');
 const moment = require('moment');
 const Plot = require('plotly-notebook-js');
-const { notebookRecorder } = require('../utils/notebook-recorder');
+const { NotebookRecorder } = require('../utils/notebook-recorder');
 const { advanceTimeAndBlock } = require('../utils/evm');
 
 class Notebook {
-  jobOwner;
-  keeper;
-  keep3r;
-  governance;
-  keep3rV1;
-  helper;
-  job;
-  w3Keep3r;
-  rewardPeriod;
-  swapper;
-  ethers;
+  traces;
+  events;
 
   async setup(blockNumber) {
     await evm.reset({
@@ -29,7 +21,7 @@ class Notebook {
     });
 
     // setup credit recorder
-    this.notebookRecorder = new notebookRecorder();
+    this.notebookRecorder = new NotebookRecorder();
   }
 
   // contract utils
@@ -91,46 +83,122 @@ class Notebook {
   }
 
   // draw settings
+  /* TODO: allow more than 1 viewArgument
+  // keep3rV1.bonds(**KP3R, KEEPER**)
+   */
+  addViewTrace(contract, viewName, viewArgument) {
+    if(!this.traces){
+      this.traces = []
+    }
+    this.traces.push({
+      contract: contract,
+      viewName: viewName,
+      viewArgument: viewArgument
+    })
+  }
 
-  /* TODO: make independent of params */
-  /* make params string */
-  async recordCredits(keep3r, job) {
-    await this.notebookRecorder.recordView(keep3r, 'jobLiquidityCredits', job.address, 0);
-    await this.notebookRecorder.recordView(keep3r, 'totalJobCredits', job.address, 1);
+ addEventTrace(w3contract, viewName, viewArgument) {
+   if(!this.events){
+     this.events = []
+   }
+   this.events.push({
+     w3contract: w3contract,
+     viewName: viewName,
+     viewArgument: viewArgument
+   })
+ }
+
+ period
+
+ setPeriodTrace(periodTime) {
+   this.period = periodTime
+ }
+
+  resetTraces() {
+    this.traces = []
+    this.events = []
+  }
+
+  async recordCredits() {
+    await Promise.all(this.traces.map(async(t,i)=>{
+        await this.notebookRecorder.recordView(t.contract,t.viewName,t.viewArgument,i)
+    })
+    )
   }
 
   resetRecording() {
     this.notebookRecorder.reset();
   }
 
-  /* TODO: make draw independent of the draw params
-  // - add function to add traces to the drawing
-  */
+  /* TODO: keep factorizing */
   async draw() {
     const plot = Plot.createPlot([]);
+
+    if(this.traces){
+      this.traces.map((t,i)=>{
+        plot.addTraces(this.notebookRecorder.getViewRecording(i), {
+          name: t.viewName
+        })
+      })
+    }
+
+    /* TODO: fix event traces */
+    if(this.events){
+      this.events.map(async(e,i)=>{
+        plot.addTraces(await this.notebookRecorder.getEventsTrace(e.w3contract, e.eventName), {
+          name: e.eventName,
+          mode: 'markers',
+        })
+      })
+    }
+
     plot.addTraces([
       {
-        ...this.notebookRecorder.getViewRecording(0),
-        name: 'Current credits',
-        mode: 'lines',
-        line: {
-          color: 'rgba(51, 0, 255, .3)',
-          width: 1,
-          dash: 'dashdot',
+        ...(await this.notebookRecorder.getPeriodTrace(this.period)),
+        name: 'Period',
+        mode: 'markers',
+        marker: {
+          symbol: 'line-ns-open',
+          size: 12,
+          color: 'rgb(0, 0, 0)',
         },
       },
     ]);
-    plot.addTraces([
-      {
-        ...this.notebookRecorder.getViewRecording(1),
-        name: 'Total credits',
-        mode: 'lines+markers',
-        line: {
-          color: 'rgb(63, 255, 0)',
-          width: 2,
-        },
-      },
-    ]);
+
+    // plot.addTraces([
+    //   {
+    //     ...this.notebookRecorder.getViewRecording(0),
+    //     name: 'Current credits',
+    //     mode: 'lines',
+    //     line: {
+    //       color: 'rgba(51, 0, 255, .3)',
+    //       width: 1,
+    //       dash: 'dashdot',
+    //     },
+    //   },
+    // ]);
+    // plot.addTraces([
+    //   {
+    //     ...this.notebookRecorder.getViewRecording(1),
+    //     name: 'Total credits',
+    //     mode: 'lines+markers',
+    //     line: {
+    //       color: 'rgb(63, 255, 0)',
+    //       width: 2,
+    //     },
+    //   },
+    // ]);
+    // plot.addTraces([
+    //   {
+    //     ...this.notebookRecorder.getViewRecording(2),
+    //     name: 'Period credits',
+    //     mode: 'lines+markers',
+    //     line: {
+    //       color: 'rgb(63, 255, 255)',
+    //       width: 2,
+    //     },
+    //   },
+    // ]);
     // plot.addTraces([
     //   {
     //     ...(await this.notebookRecorder.getEventsTrace(this.w3Keep3r, 'KeeperWork')),
@@ -155,18 +223,7 @@ class Notebook {
     //     },
     //   },
     // ]);
-    // plot.addTraces([
-    //   {
-    //     ...(await this.notebookRecorder.getPeriodTrace(this.rewardPeriod)),
-    //     name: 'Period',
-    //     mode: 'markers',
-    //     marker: {
-    //       symbol: 'line-ns-open',
-    //       size: 12,
-    //       color: 'rgb(0, 0, 0)',
-    //     },
-    //   },
-    // ]);
+    //
     // plot.addTraces([
     //   {
     //     ...(await this.notebookRecorder.getEventsTrace(this.w3Keep3r, 'LiquidityAddition')),
