@@ -12,6 +12,7 @@ const getPastEvents = (contract, eventName, fromBlock, options) => {
   return new Promise((resolve, reject) => {
     const optionsWithDefault = {
       fromBlock: fromBlock,
+      toBlock: 'latest',
       ...options,
     };
 

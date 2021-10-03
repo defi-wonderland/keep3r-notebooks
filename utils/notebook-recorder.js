@@ -2,6 +2,7 @@ const { unixToDate, bnToNumber } = require('../utils/jupyter');
 const { constants } = require('../utils');
 const { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
 const { getPastEvents } = require('../utils/contracts');
+const { ethers } = require('hardhat');
 
 class NotebookRecorder {
   viewTrace = {};
@@ -9,8 +10,8 @@ class NotebookRecorder {
 
   async reset() {
     delete this.viewTrace;
-    this.blockReference = await getBlockTimestamp();
-    this.viewTrace = {}
+    this.blockReference = await ethers.provider.getBlock('latest');
+    this.viewTrace = {};
   }
 
   async recordView(contract, viewName, viewArgument, id) {
@@ -28,7 +29,7 @@ class NotebookRecorder {
   }
 
   async getEventsTrace(eventContract, eventName, timestampArgIndex) {
-    const events = await getPastEvents(eventContract, eventName, this.blockReference);
+    const events = await getPastEvents(eventContract, eventName, this.blockReference.number);
 
     let timestampPromises;
     if (timestampArgIndex === undefined) {
@@ -52,7 +53,7 @@ class NotebookRecorder {
   async getPeriodTrace(period) {
     const periodTrace = { x: [], y: [] };
 
-    const firstTimestamp = await getBlockTimestamp(constants.FORK_BLOCK_NUMBER);
+    const firstTimestamp = this.blockReference.timestamp;
     const latestTimestamp = await getLatestBlockTimestamp();
 
     const firstPeriod = firstTimestamp - (firstTimestamp % period) + period;

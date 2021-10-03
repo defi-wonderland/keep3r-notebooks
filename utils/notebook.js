@@ -1,7 +1,7 @@
 require('dotenv').config({ path: '../.env' });
 const { evm, wallet, constants, contracts, common } = require('../utils');
 const { getBlockTimestamp } = require('../utils/evm');
-const { toUnit } = require('../utils/bn')
+const { toUnit } = require('../utils/bn');
 const { getPastEvents } = require('../utils/contracts');
 const { unixToDate } = require('../utils/jupyter');
 const { ethers, web3, artifacts } = require('hardhat');
@@ -70,86 +70,118 @@ class Notebook {
 
   async sleepAndRecord(totalSleepTime, recordEvery) {
     let totalSlept = 0;
-    await this.recordCredits();
+    await this.recordViews();
 
     while (totalSlept < totalSleepTime - recordEvery) {
       await advanceTimeAndBlock(recordEvery);
-      await this.recordCredits();
+      await this.recordViews();
       totalSlept += recordEvery;
     }
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
-    await this.recordCredits();
+    await this.recordViews();
   }
+
+  async sleepAndExecute(totalSleepTime, recordEvery, executeFunction, executeEvery) {
+    let totalSlept = 0;
+    let lastExecution = 0;
+    await this.recordViews();
+
+    while (totalSlept < totalSleepTime - recordEvery) {
+      await advanceTimeAndBlock(recordEvery);
+      await this.recordViews();
+      totalSlept += recordEvery;
+      if (totalSlept > lastExecution + executeEvery) {
+        await executeFunction();
+        await this.recordViews();
+        lastExecution = totalSlept
+      }
+    }
+
+    await advanceTimeAndBlock(totalSleepTime - totalSlept);
+    await $.recordViews();  }
 
   // draw settings
   /* TODO: allow more than 1 viewArgument
-  // keep3rV1.bonds(**KP3R, KEEPER**)
+  // ex. keep3rV1.bonds(KP3R, KEEPER)
    */
   addViewTrace(contract, viewName, viewArgument) {
-    if(!this.traces){
-      this.traces = []
+    if (!this.traces) {
+      this.traces = [];
     }
     this.traces.push({
       contract: contract,
       viewName: viewName,
-      viewArgument: viewArgument
-    })
+      viewArgument: viewArgument,
+    });
   }
 
- addEventTrace(w3contract, viewName, viewArgument) {
-   if(!this.events){
-     this.events = []
-   }
-   this.events.push({
-     w3contract: w3contract,
-     viewName: viewName,
-     viewArgument: viewArgument
-   })
- }
+  addEventTrace(w3contract, eventName, timestampArgIndex) {
+    if (!this.events) {
+      this.events = [];
+    }
+    this.events.push({
+      w3contract: w3contract,
+      eventName: eventName,
+      timestampArgIndex: timestampArgIndex,
+    });
+  }
 
- period
+  period;
 
- setPeriodTrace(periodTime) {
-   this.period = periodTime
- }
+  setPeriodTrace(periodTime) {
+    this.period = periodTime;
+  }
 
   resetTraces() {
-    this.traces = []
-    this.events = []
+    this.traces = [];
+    this.events = [];
   }
 
-  async recordCredits() {
-    await Promise.all(this.traces.map(async(t,i)=>{
-        await this.notebookRecorder.recordView(t.contract,t.viewName,t.viewArgument,i)
-    })
-    )
+  async recordViews() {
+    await Promise.all(
+      this.traces.map(async (t, i) => {
+        await this.notebookRecorder.recordView(t.contract, t.viewName, t.viewArgument, i);
+      })
+    );
   }
 
-  resetRecording() {
-    this.notebookRecorder.reset();
+  async resetRecording() {
+    await this.notebookRecorder.reset();
   }
 
   /* TODO: keep factorizing */
   async draw() {
     const plot = Plot.createPlot([]);
 
-    if(this.traces){
-      this.traces.map((t,i)=>{
-        plot.addTraces(this.notebookRecorder.getViewRecording(i), {
-          name: t.viewName
-        })
-      })
+    if (this.traces) {
+      this.traces.map((t, i) => {
+        plot.addTraces([
+          {
+            ...this.notebookRecorder.getViewRecording(i),
+            name: t.viewName,
+            line: {
+              width: 1,
+              // dash: 'dashdot',
+            },
+          },
+        ]);
+      });
     }
 
-    /* TODO: fix event traces */
-    if(this.events){
-      this.events.map(async(e,i)=>{
-        plot.addTraces(await this.notebookRecorder.getEventsTrace(e.w3contract, e.eventName), {
-          name: e.eventName,
-          mode: 'markers',
+    /* TODO: snapshots not working with web3 */
+    if (this.events) {
+      await Promise.all(
+        this.events.map(async (e, i) => {
+          plot.addTraces([
+            {
+              ...(await this.notebookRecorder.getEventsTrace(e.w3contract, e.eventName, e.timestampArgIndex)),
+              name: e.eventName,
+              mode: 'markers',
+            },
+          ]);
         })
-      })
+      );
     }
 
     plot.addTraces([

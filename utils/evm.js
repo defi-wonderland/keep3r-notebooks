@@ -12,6 +12,7 @@ class SnapshotManager {
 
   async revert(id) {
     await this.revertSnapshot(id);
+    await advanceBlock();
     this.snapshots[id] = await this.takeSnapshot();
   }
 
