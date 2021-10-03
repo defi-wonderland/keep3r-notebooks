@@ -29,6 +29,7 @@ A Jupyter Notebook environment for Keep3r E2E testing.
 1. Select `Node.js` as kernel to run all `00-setup.ipynb`
 1. Open another notebook and select:
    `Navigation bar > Kernel > Change kernel... > 00-setup.ipynb`
+1. Execute `yarn jupyter:kill` to terminate the Jupyter environment
 
 ### Notebooks utils
 
