@@ -66,7 +66,28 @@ next(async()=>{
     await $.sleepAndExecute(
         4 * rewardPeriodTime,
         $.time(4,'hours'),
-        async()=>{await job.connect(keep3r.keeper).workHard(2)},
+        async()=>{
+            await job.connect(keep3r.keeper).workHard(2)
+        },
+        $.time(36,'hours')
+    )
+    
+    await $.draw()
+})
+
+// balanced work with twap change
+
+next(async()=>{
+    await $.sleep(rewardPeriodTime)
+    await $.resetRecording()
+        
+    await $.sleepAndExecute(
+        4 * rewardPeriodTime,
+        $.time(4,'hours'),
+        async()=>{
+            await job.connect(keep3r.keeper).workHard(2)
+            await common.makeASwap(provider, keep3r.v1.address, constants.WETH_ADDRESS, provider.address, 1000, toUnit(300))
+        },
         $.time(36,'hours')
     )
     
