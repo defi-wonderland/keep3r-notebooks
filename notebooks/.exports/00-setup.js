@@ -1,3 +1,5 @@
+// import dependencies
+
 var moment = require('moment');
 var { constants } = require('../utils');
 var { advanceTimeAndBlock } = require('../utils/evm');
@@ -17,6 +19,8 @@ var snapshots = new evm.SnapshotManager();
 
 clear();
 
+// setup tools and contracts
+
 next(async () => {
   await $.setup(constants.FORK_BLOCK_NUMBER);
   await keep3r.setup();
@@ -25,6 +29,8 @@ next(async () => {
   weth = await $.fetch('ERC20ForTest', constants.WETH_ADDRESS);
   uniV3Pool = await $.fetch('IUniswapV3Pool', constants.UNISWAP_V3_ORACLE_POOL);
 });
+
+// mint a liquidity to Keep3r.provider
 
 next(async () => {
   // mint KP3R and WETH to provider and approve spendings
@@ -46,6 +52,8 @@ next(async () => {
   kp3rSpent = kp3rInitialBalance.sub(kp3rBalance);
   wethSpent = wethInitialBalance.sub(wethBalance);
 });
+
+// take snapshot
 
 next(async () => {
   setupSnap = await snapshots.take();
