@@ -28,10 +28,16 @@ class Notebook {
 
   async fetch(contractName, address) {
     let fetchedContract = await ethers.getContractAt(contractName, address);
+
+    let artifact = await artifacts.readArtifact(contractName);
+    fetchedContract.web3 = new web3.eth.Contract(artifact.abi, address);
+
     return fetchedContract;
   }
 
   async deploy(contractName, ctor = null, libraries = null) {
+    // TODO: fix Cannot read property 'signer' of null
+    // TODO: add web3
     let factory = await ethers.getContractFactory(contractName, libraries);
     let contract = await factory.deploy(constructor);
     return contract;
@@ -94,12 +100,13 @@ class Notebook {
       if (totalSlept > lastExecution + executeEvery) {
         await executeFunction();
         await this.recordViews();
-        lastExecution = totalSlept
+        lastExecution = totalSlept;
       }
     }
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
-    await $.recordViews();  }
+    await $.recordViews();
+  }
 
   // draw settings
   /* TODO: allow more than 1 viewArgument
@@ -197,6 +204,7 @@ class Notebook {
       },
     ]);
 
+    // TODO: add this configuration to addView/EventTraces factories
     // plot.addTraces([
     //   {
     //     ...this.notebookRecorder.getViewRecording(0),

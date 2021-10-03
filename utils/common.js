@@ -143,7 +143,9 @@ const makeASwap = async (provider, fromToken, toToken, receiver, fee, amount) =>
 
   const blockTimestamp = (await ethers.provider.getBlock('latest')).timestamp;
 
-  return await uniRouter.connect(provider).exactInputSingle([fromToken, toToken, 10000, receiver, blockTimestamp + 100, amount, toUnit(0.0001), 0]);
+  return await uniRouter
+    .connect(provider)
+    .exactInputSingle([fromToken, toToken, 10000, receiver, blockTimestamp + 100, amount, toUnit(0.0001), 0]);
 };
 
 exports.Keep3r = Keep3r;
