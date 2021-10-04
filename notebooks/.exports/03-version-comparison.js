@@ -65,9 +65,10 @@ next(async () => {
 
   $.setPeriodTrace(432000);
 
-  $.addViewTrace(keep3r.v1, 'credits', [v1Job.address, keep3r.v1.address], 'V1 credits');
-  $.addViewTrace(keep3r.v2, 'totalJobCredits', [v2Job.address], 'V2 credits');
+  $.addViewTrace(keep3r.v1, 'credits', [v1Job.address, keep3r.v1.address], 'Keep3rV1 credits');
+  $.addViewTrace(keep3r.v2, 'totalJobCredits', [v2Job.address], 'Keep3rV2 total credits');
   $.addEventTrace(keep3r.v2.web3, 'KeeperWork');
+  $.addEventTrace(keep3r.v2.web3, 'LiquidityCreditsReward', '_rewardedAt');
 });
 
 // working in both versions
@@ -76,8 +77,8 @@ next(async () => {
   await $.resetRecording();
 
   await $.sleepAndExecute(
-    $.time(10, 'days'),
-    $.time(12, 'hours'),
+    $.time(20, 'days'),
+    $.time(6, 'hours'),
     // make keepers work each job every 2 days
     [
       {
@@ -85,7 +86,7 @@ next(async () => {
           tx1 = await v1Job.connect(v1Keeper).work();
           tx2 = await v2Job.connect(v2Keeper).work();
         },
-        every: $.time(2, 'days'),
+        every: $.time(3, 'days'),
       },
     ]
   );

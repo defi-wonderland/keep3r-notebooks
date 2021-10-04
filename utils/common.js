@@ -72,7 +72,7 @@ const setupKeep3r = async () => {
       Keep3rLibrary: library.address,
     },
   };
-  const helperFactory = await ethers.getContractFactory('Keep3rHelper', libraries);
+  const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest', libraries);
   const keep3rFactory = await ethers.getContractFactory('Keep3r', libraries);
 
   const currentNonce = await ethers.provider.getTransactionCount(governance._address);
@@ -84,6 +84,11 @@ const setupKeep3r = async () => {
   const keep3r = await keep3rFactory
     .connect(governance)
     .deploy(governance._address, helper.address, keep3rV1.address, keep3rV1Proxy.address, UNISWAP_V3_ORACLE_POOL);
+
+  // set keep3rHelperV2.baseFee = keep3rV1Helper.getFastGas()
+  const helperV1 = await ethers.getContractAt('IKeep3rV1Helper', await keep3rV1.callStatic.KPRH());
+  const fastGas = helperV1.getFastGas();
+  await helper.setBaseFee(fastGas);
 
   // set Keep3r as proxy minter
   await keep3rV1Proxy.connect(governance).setMinter(keep3r.address);
