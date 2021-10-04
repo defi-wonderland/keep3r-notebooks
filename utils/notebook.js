@@ -35,11 +35,11 @@ class Notebook {
     return fetchedContract;
   }
 
-  // TODO: fix Cannot read property 'signer' of null
-  async deploy(contractName, ctor = null, libraries = null) {
+  // TODO: allow deploy function to add libraries
+  async deploy(contractName, constructor = null, libraries = null) {
     // TODO: add web3
-    let factory = await ethers.getContractFactory(contractName, libraries);
-    let contract = await factory.deploy(constructor);
+    let factory = await ethers.getContractFactory(contractName);
+    let contract = await factory.deploy(...constructor);
     return contract;
   }
 

@@ -80,7 +80,7 @@ next(async () => {
     [
       {
         run: async () => {
-          await common.makeASwap(provider, keep3r.v1.address, constants.WETH_ADDRESS, provider.address, 1000, toUnit(1000));
+          await common.makeASwap(provider, keep3r.v1.address, constants.WETH_ADDRESS, provider.address, 1000, toUnit(300));
           await uniQuote();
         },
         every: $.time(2, 'days'),
@@ -102,7 +102,7 @@ next(async () => {
       run: async () => {
         await job.connect(keep3r.keeper).workHard(2);
       },
-      every: $.time(12, 'hours'),
+      every: $.time(36, 'hours'),
     },
   ]);
 
@@ -146,7 +146,7 @@ next(async () => {
       run: async () => {
         await job.connect(keep3r.keeper).workHard(3);
       },
-      every: $.time(12, 'hours'),
+      every: $.time(36, 'hours'),
     },
   ]);
 
@@ -158,12 +158,13 @@ next(async () => {
 next(async () => {
   await $.resetRecording();
   block = await $.block();
+  await $.sleep(rewardPeriodTime);
   await advanceTimeAndBlock(rewardPeriodTime - (block.timestamp % rewardPeriodTime));
 
   await $.sleepAndExecute(2 * Math.floor(1.9 * rewardPeriodTime), $.time(4, 'hours'), [
     {
       run: async () => {
-        await job.connect(keep3r.keeper).workHard(25);
+        await job.connect(keep3r.keeper).workHard(10);
       },
       every: Math.floor(1.8 * rewardPeriodTime),
     },

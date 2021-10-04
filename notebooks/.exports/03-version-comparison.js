@@ -42,7 +42,6 @@ next(async () => {
 });
 
 // add liquidity to jobs
-/* TODO: set same underlying liquidity for V1 and V2 */
 
 next(async () => {
   // V1 create a job and add liquidity
@@ -86,7 +85,7 @@ next(async () => {
           tx1 = await v1Job.connect(v1Keeper).work();
           tx2 = await v2Job.connect(v2Keeper).work();
         },
-        every: $.time(3, 'days'),
+        every: $.time(4, 'days'),
       },
     ]
   );
