@@ -30,6 +30,7 @@ next(async() =>{
     $.addEventTrace(keep3r.v2.web3, 'LiquidityCreditsReward', '_rewardedAt')
     $.addEventTrace(keep3r.v2.web3, 'LiquidityAddition')
     $.addEventTrace(keep3r.v2.web3, 'KeeperWork')
+    $.addEventTrace(uniV3Pool.web3, 'Swap')    
 })
 
 // liquidity added in 00-setup
@@ -68,10 +69,6 @@ uniQuote = async()=>{
     console.log('tickQuote', quote)
 }
 
-// read uniswap pool Swap events
-
-$.addEventTrace(uniV3Pool.web3, 'Swap')
-
 // credit mining with twap change
 
 next(async()=>{    
@@ -81,17 +78,19 @@ next(async()=>{
         3 * rewardPeriodTime,
         $.time(12,'hours'),
         // make a big swap in uniswapV3 pool to alter quote
-        async()=>{
-            await common.makeASwap(
-                    provider, 
-                    keep3r.v1.address, 
-                    constants.WETH_ADDRESS, 
-                    provider.address, 
-                    1000, 
-                    toUnit(1000))
-            await uniQuote()
-                 },
-        $.time(2,'days')
+        [{
+            run: async()=>{
+                    await common.makeASwap(
+                            provider, 
+                            keep3r.v1.address, 
+                            constants.WETH_ADDRESS, 
+                            provider.address, 
+                            1000, 
+                            toUnit(1000))
+                    await uniQuote()
+            },
+            every: $.time(2,'days')
+         }]
     )
     
     await $.draw()
@@ -106,10 +105,10 @@ next(async()=>{
     await $.sleepAndExecute(
         4 * rewardPeriodTime,
         $.time(4,'hours'),
-        async()=>{
+        [{run: async()=>{
             await job.connect(keep3r.keeper).workHard(2)
         },
-        $.time(12,'hours')
+        every: $.time(12,'hours')}]
     )
     
     await $.draw()
@@ -124,11 +123,18 @@ next(async()=>{
     await $.sleepAndExecute(
         4 * rewardPeriodTime,
         $.time(4,'hours'),
-        async()=>{
-            await job.connect(keep3r.keeper).workHard(2)
-            await common.makeASwap(provider, keep3r.v1.address, constants.WETH_ADDRESS, provider.address, 1000, toUnit(300))
+        [{
+            run: async()=>{
+                await job.connect(keep3r.keeper).workHard(2)
+            },
+            every: $.time(36,'hours'),
         },
-        $.time(36,'hours')
+        {
+            run: async()=>{
+                await common.makeASwap(provider, keep3r.v1.address, constants.WETH_ADDRESS, provider.address, 1000, toUnit(300))
+            },
+            every: $.time(5,'days')
+        }]
     )
     
     await $.draw()
@@ -145,10 +151,10 @@ next(async()=>{
     await $.sleepAndExecute(
         2 * rewardPeriodTime,
         $.time(4,'hours'),
-        async()=>{
+        [{run: async()=>{
             await job.connect(keep3r.keeper).workHard(3)
         },
-        $.time(12,'hours')
+        every: $.time(12,'hours')}]
     )
  
     await $.draw()
@@ -164,10 +170,10 @@ next(async()=>{
     await $.sleepAndExecute(
         2 * Math.floor(1.9 * rewardPeriodTime),
         $.time(4,'hours'),
-        async()=>{
+        [{run: async()=>{
             await job.connect(keep3r.keeper).workHard(25)
         },
-        Math.floor(1.8 * rewardPeriodTime)
+        every: Math.floor(1.8 * rewardPeriodTime)}]
     )
  
     await $.sleepAndRecord(rewardPeriodTime, $.time(4,'hours'))
@@ -185,10 +191,10 @@ next(async()=>{
     await $.sleepAndExecute(
         2 * rewardPeriodTime,
         $.time(4,'hours'),
-        async()=>{
+        [{run: async()=>{
             await keep3r.v2.connect(provider).unbondLiquidityFromJob(job.address, keep3r.pool.address, toUnit(1))
         },
-        rewardPeriodTime
+        every: rewardPeriodTime}]
     )
  
     await $.sleepAndRecord(rewardPeriodTime, $.time(4,'hours'))

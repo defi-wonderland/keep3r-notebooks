@@ -88,21 +88,26 @@ class Notebook {
     await this.recordViews();
   }
 
-  /* TODO: allow multiple [executeFunction and executeEvery] */
-  async sleepAndExecute(totalSleepTime, recordEvery, executeFunction, executeEvery) {
+  async sleepAndExecute(totalSleepTime, recordEvery, executions) {
     let totalSlept = 0;
-    let lastExecution = 0;
+    let lastExecutions = {};
     await this.recordViews();
 
     while (totalSlept < totalSleepTime - recordEvery) {
       await advanceTimeAndBlock(recordEvery);
       await this.recordViews();
       totalSlept += recordEvery;
-      if (totalSlept > lastExecution + executeEvery) {
-        await executeFunction();
-        await this.recordViews();
-        lastExecution = totalSlept;
-      }
+
+      await Promise.all(
+        executions.map(async (execution, executionIndex) => {
+          if (totalSlept > (lastExecutions[executionIndex] || 0) + execution.every) {
+            await execution.run();
+            lastExecutions[executionIndex] = totalSlept;
+          }
+        })
+      );
+
+      await this.recordViews();
     }
 
     await advanceTimeAndBlock(totalSleepTime - totalSlept);
@@ -152,9 +157,7 @@ class Notebook {
   async recordViews() {
     await Promise.all(
       this.traces.map(async (trace, index) => {
-        await this.notebookRecorder.recordView(
-          trace.contract, trace.viewName, trace.viewArguments, index
-        );
+        await this.notebookRecorder.recordView(trace.contract, trace.viewName, trace.viewArguments, index);
       })
     );
   }
