@@ -6,7 +6,7 @@ module.exports = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      hardfork: 'berlin',
+      hardfork: 'london',
       allowUnlimitedContractSize: true,
       gasPrice: 'auto',
     },

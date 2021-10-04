@@ -72,8 +72,7 @@ const setupKeep3r = async () => {
       Keep3rLibrary: library.address,
     },
   };
-  // const helperFactory = await ethers.getContractFactory('Keep3rHelper', libraries);
-  const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest', libraries);
+  const helperFactory = await ethers.getContractFactory('Keep3rHelper', libraries);
   const keep3rFactory = await ethers.getContractFactory('Keep3r', libraries);
 
   const currentNonce = await ethers.provider.getTransactionCount(governance._address);
@@ -81,7 +80,6 @@ const setupKeep3r = async () => {
 
   // deploy Keep3rHelper and Keep3r contract
   const helper = await helperFactory.connect(governance).deploy(keeperV2Address);
-  await helper.setBaseFee(50000000000); // only in 'Keep3rHelperForTest' 50 GWei
 
   const keep3r = await keep3rFactory
     .connect(governance)
@@ -105,7 +103,7 @@ const setupKeep3rV1 = async (governance) => {
   // await ethers.getContractAt('IKeep3rV1Proxy','0xFC48aC750959d5d5aE9A4bb38f548A7CA8763F8d')
 
   // set proxy as Keep3rV1 governance
-  await keep3rV1.connect(governance).setGovernance(keep3rV1Proxy.address, { gasPrice: 500000000 });
+  await keep3rV1.connect(governance).setGovernance(keep3rV1Proxy.address);
   await keep3rV1Proxy.connect(governance).acceptKeep3rV1Governance();
 
   return { keep3rV1, keep3rV1Proxy };
