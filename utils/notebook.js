@@ -119,11 +119,12 @@ class Notebook {
   // ex. keep3rV1.bonds(KP3R, KEEPER)
   // ex. keep3rV2.totalJobCredits(JOB)
    */
-  addViewTrace(contract, viewName, viewArguments) {
+  addViewTrace(contract, viewName, viewArguments, traceName = null) {
     this.traces.push({
       contract,
       viewName,
       viewArguments,
+      traceName,
     });
   }
 
@@ -174,7 +175,7 @@ class Notebook {
       plot.addTraces([
         {
           ...this.notebookRecorder.getViewRecording(index),
-          name: trace.viewName,
+          name: trace.traceName || trace.viewName,
           line: {
             width: 1,
             // dash: 'dashdot',
