@@ -121,16 +121,15 @@ const createJobForTest = async (keep3rAddress, jobOwner) => {
 
 const setupLiquidity = async (liquidityData) => {
   const whale = await wallet.impersonate(liquidityData.whale);
-  const pool = await ethers.getContractAt('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20', liquidityData.pool);
+  const pool = await ethers.getContractAt('IERC20', liquidityData.pool);
   await pool.connect(whale).transfer(this.jobOwner.address, 1);
   await this.keep3r.connect(this.governance).approveLiquidity(pool.address);
   return { whale, pool };
 };
 
 const addLiquidityToJob = async (pool, whale, amount) => {
-  await pool.connect(whale).transfer(this.jobOwner.address, amount, { gasPrice: 0 });
-  await pool.connect(this.jobOwner).approve(this.keep3r.address, amount);
-  await this.keep3r.connect(this.jobOwner).addLiquidityToJob(this.job.address, pool.address, amount);
+  await pool.connect(whale).approve(this.keep3r.address, amount);
+  await this.keep3r.connect(whale).addLiquidityToJob(this.job.address, pool.address, amount);
 };
 
 // uniswap utils
@@ -150,5 +149,6 @@ const makeASwap = async (provider, fromToken, toToken, receiver, fee, amount) =>
 
 exports.Keep3r = Keep3r;
 exports.setupKeep3r = setupKeep3r;
+exports.setupKeep3rPool = setupKeep3rPool;
 exports.createJobForTest = createJobForTest;
 exports.makeASwap = makeASwap;

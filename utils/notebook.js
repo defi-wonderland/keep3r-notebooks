@@ -11,8 +11,8 @@ const { NotebookRecorder } = require('../utils/notebook-recorder');
 const { advanceTimeAndBlock } = require('../utils/evm');
 
 class Notebook {
-  traces;
-  events;
+  traces = [];
+  events = [];
 
   async setup(blockNumber) {
     await evm.reset({
@@ -88,6 +88,7 @@ class Notebook {
     await this.recordViews();
   }
 
+  /* TODO: allow multiple [executeFunction and executeEvery] */
   async sleepAndExecute(totalSleepTime, recordEvery, executeFunction, executeEvery) {
     let totalSlept = 0;
     let lastExecution = 0;
@@ -111,26 +112,29 @@ class Notebook {
   // draw settings
   /* TODO: allow more than 1 viewArgument
   // ex. keep3rV1.bonds(KP3R, KEEPER)
+  // ex. keep3rV2.totalJobCredits(JOB)
    */
-  addViewTrace(contract, viewName, viewArgument) {
-    if (!this.traces) {
-      this.traces = [];
-    }
+  addViewTrace(contract, viewName, viewArguments) {
     this.traces.push({
-      contract: contract,
-      viewName: viewName,
-      viewArgument: viewArgument,
+      contract,
+      viewName,
+      viewArguments,
     });
   }
 
+  // /* TODO: add functionTrace */
+  // async addFunctionTrace(fn){
+  //   (x,y) = await fn();
+  //   this.traces.push({
+  //     (x,y)
+  //   })
+  // }
+
   addEventTrace(w3contract, eventName, timestampArgIndex) {
-    if (!this.events) {
-      this.events = [];
-    }
     this.events.push({
-      w3contract: w3contract,
-      eventName: eventName,
-      timestampArgIndex: timestampArgIndex,
+      w3contract,
+      eventName,
+      timestampArgIndex,
     });
   }
 
@@ -147,8 +151,10 @@ class Notebook {
 
   async recordViews() {
     await Promise.all(
-      this.traces.map(async (t, i) => {
-        await this.notebookRecorder.recordView(t.contract, t.viewName, t.viewArgument, i);
+      this.traces.map(async (trace, index) => {
+        await this.notebookRecorder.recordView(
+          trace.contract, trace.viewName, trace.viewArguments, index
+        );
       })
     );
   }
@@ -161,35 +167,31 @@ class Notebook {
   async draw() {
     const plot = Plot.createPlot([]);
 
-    if (this.traces) {
-      this.traces.map((t, i) => {
-        plot.addTraces([
-          {
-            ...this.notebookRecorder.getViewRecording(i),
-            name: t.viewName,
-            line: {
-              width: 1,
-              // dash: 'dashdot',
-            },
+    this.traces.map((trace, index) => {
+      plot.addTraces([
+        {
+          ...this.notebookRecorder.getViewRecording(index),
+          name: trace.viewName,
+          line: {
+            width: 1,
+            // dash: 'dashdot',
           },
-        ]);
-      });
-    }
+        },
+      ]);
+    });
 
     /* TODO: snapshots not working with web3 */
-    if (this.events) {
-      await Promise.all(
-        this.events.map(async (e, i) => {
-          plot.addTraces([
-            {
-              ...(await this.notebookRecorder.getEventsTrace(e.w3contract, e.eventName, e.timestampArgIndex)),
-              name: e.eventName,
-              mode: 'markers',
-            },
-          ]);
-        })
-      );
-    }
+    await Promise.all(
+      this.events.map(async (e, i) => {
+        plot.addTraces([
+          {
+            ...(await this.notebookRecorder.getEventsTrace(e.w3contract, e.eventName, e.timestampArgIndex)),
+            name: e.eventName,
+            mode: 'markers',
+          },
+        ]);
+      })
+    );
 
     plot.addTraces([
       {

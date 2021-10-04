@@ -9,23 +9,20 @@ class NotebookRecorder {
   blockReference;
 
   async reset() {
-    delete this.viewTrace;
     this.blockReference = await ethers.provider.getBlock('latest');
     this.viewTrace = {};
   }
 
-  async recordView(contract, viewName, viewArgument, id) {
+  async recordView(contract, viewName, viewArguments, id) {
     if (!this.viewTrace[id]) this.viewTrace[id] = { x: [], y: [] };
 
-    const viewResult = await contract[viewName](viewArgument);
+    const viewResult = await contract[viewName](...viewArguments);
     this.viewTrace[id].x.push(unixToDate(await getLatestBlockTimestamp()));
     this.viewTrace[id].y.push(bnToNumber(viewResult));
   }
 
   getViewRecording(id) {
-    if (this.viewTrace) {
-      return this.viewTrace[id];
-    }
+    return this.viewTrace[id];
   }
 
   async getEventsTrace(eventContract, eventName, timestampArgIndex) {
