@@ -3,7 +3,7 @@
 var moment = require('moment');
 var { constants } = require('../utils');
 var { advanceTimeAndBlock } = require('../utils/evm');
-var { evm, common } = require('../utils');
+var { evm, common, contracts } = require('../utils');
 var { toUnit } = require('../utils/bn');
 var { getLatestBlockTimestamp, getBlockTimestamp } = require('../utils/evm');
 var { next, clear, bnToNumber } = require('../utils/jupyter');

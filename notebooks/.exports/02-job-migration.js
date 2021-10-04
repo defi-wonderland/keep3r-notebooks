@@ -7,6 +7,9 @@ next(async () => {
 // create job and add liquidity
 
 next(async () => {
+  // let time pass without swaps to keep twap calculation stable
+  $.sleep($.time(10, 'days'));
+
   job = await (await ethers.getContractFactory('JobForTest')).connect(provider).deploy(keep3r.v2.address);
   newJob = await (await ethers.getContractFactory('JobForTest')).connect(provider).deploy(keep3r.v2.address);
 

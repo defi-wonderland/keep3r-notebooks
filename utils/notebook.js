@@ -35,8 +35,8 @@ class Notebook {
     return fetchedContract;
   }
 
+  // TODO: fix Cannot read property 'signer' of null
   async deploy(contractName, ctor = null, libraries = null) {
-    // TODO: fix Cannot read property 'signer' of null
     // TODO: add web3
     let factory = await ethers.getContractFactory(contractName, libraries);
     let contract = await factory.deploy(constructor);
@@ -45,6 +45,11 @@ class Notebook {
 
   async getBalance(address) {
     return await ethers.provider.getBalance(address);
+  }
+
+  /* TODO: not working */
+  async setBalance(address, amount) {
+    await contracts.setBalance(address, amount);
   }
 
   async newSigner() {

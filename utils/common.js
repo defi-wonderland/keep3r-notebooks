@@ -72,6 +72,7 @@ const setupKeep3r = async () => {
       Keep3rLibrary: library.address,
     },
   };
+  // const helperFactory = await ethers.getContractFactory('Keep3rHelper', libraries);
   const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest', libraries);
   const keep3rFactory = await ethers.getContractFactory('Keep3r', libraries);
 
@@ -80,12 +81,11 @@ const setupKeep3r = async () => {
 
   // deploy Keep3rHelper and Keep3r contract
   const helper = await helperFactory.connect(governance).deploy(keeperV2Address);
+  await helper.setBaseFee(50000000000); // only in 'Keep3rHelperForTest' 50 GWei
 
   const keep3r = await keep3rFactory
     .connect(governance)
     .deploy(governance._address, helper.address, keep3rV1.address, keep3rV1Proxy.address, UNISWAP_V3_ORACLE_POOL);
-
-  await helper.setBaseFee(50000000000); // 50 GWei
 
   // set Keep3r as proxy minter
   await keep3rV1Proxy.connect(governance).setMinter(keep3r.address);
@@ -152,3 +152,4 @@ exports.setupKeep3r = setupKeep3r;
 exports.setupKeep3rPool = setupKeep3rPool;
 exports.createJobForTest = createJobForTest;
 exports.makeASwap = makeASwap;
+exports.activateKeeper = activateKeeper;
