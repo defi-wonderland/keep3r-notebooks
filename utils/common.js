@@ -15,7 +15,6 @@ class Keep3r {
   v2;
   v1;
   helper;
-  library;
   proxy;
   pool;
 
@@ -26,9 +25,9 @@ class Keep3r {
     this.v1 = data.keep3rV1;
     this.proxy = data.keep3rV1Proxy;
     this.helper = data.helper;
-    this.library = data.library;
 
     // setup web3 keep3r for events
+    /* NOTE: Keep3r artifact lacks Roles and DustCollector to make it fit under 24kb */
     const artifact = await artifacts.readArtifact('Keep3r');
     this.v2.web3 = new web3.eth.Contract(artifact.abi, data.keep3r.address);
 
@@ -66,14 +65,8 @@ const setupKeep3r = async () => {
   // deploy proxy and set it as Keep3rV1 governance
   const { keep3rV1, keep3rV1Proxy } = await setupKeep3rV1(governance);
 
-  const library = await (await ethers.getContractFactory('Keep3rLibrary')).deploy();
-  const libraries = {
-    libraries: {
-      Keep3rLibrary: library.address,
-    },
-  };
-  const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest', libraries);
-  const keep3rFactory = await ethers.getContractFactory('Keep3r', libraries);
+  const helperFactory = await ethers.getContractFactory('Keep3rHelperForTest');
+  const keep3rFactory = await ethers.getContractFactory('Keep3r');
 
   const currentNonce = await ethers.provider.getTransactionCount(governance._address);
   const keeperV2Address = ethers.utils.getContractAddress({ from: governance._address, nonce: currentNonce + 1 });
@@ -85,15 +78,16 @@ const setupKeep3r = async () => {
     .connect(governance)
     .deploy(governance._address, helper.address, keep3rV1.address, keep3rV1Proxy.address, UNISWAP_V3_ORACLE_POOL);
 
-  // set keep3rHelperV2.baseFee = keep3rV1Helper.getFastGas()
   const helperV1 = await ethers.getContractAt('IKeep3rV1Helper', await keep3rV1.callStatic.KPRH());
   const fastGas = helperV1.getFastGas();
+
+  // sets Keep3rHelper base fee to replicate Keep3rV1Helper quote
   await helper.setBaseFee(fastGas);
 
   // set Keep3r as proxy minter
   await keep3rV1Proxy.connect(governance).setMinter(keep3r.address);
 
-  return { governance, keep3r, keep3rV1, keep3rV1Proxy, helper, library };
+  return { governance, keep3r, keep3rV1, keep3rV1Proxy, helper };
 };
 
 const setupKeep3rV1 = async (governance) => {
