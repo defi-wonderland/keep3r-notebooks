@@ -31,6 +31,7 @@ A Jupyter Notebook environment for Keep3r E2E testing.
 1. Open another notebook and select:
    `Navigation bar > Kernel > Change kernel... > 00-setup.ipynb`
 1. Re-run `00-setup.ipynb` to restart the environment
+   ![](config/kernel-change.gif)
 1. Execute `yarn jupyter:kill` to terminate the Jupyter environment
 
 ### Notebooks utils
