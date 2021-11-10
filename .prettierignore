@@ -1,0 +1,24 @@
+# General
+*.code-workspace
+.DS_STORE
+.prettierignore
+.husky
+.gitignore
+.gitattributes
+.env
+.env.example
+**/LICENSE
+
+# Hardhat
+artifacts
+cache
+deployments
+
+# JS
+node_modules
+yarn.lock
+
+# Notebooks
+.ipynb_checkpoints
+*.ipynb
+config
