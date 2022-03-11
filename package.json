@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "jupyter": "screen -A -m -d -S jupyterScreen jupyter lab --config config/jupyter_lab_config.py",
-    "jupyter:install": "pip install -r config/requirements.txt && ijsinstall",
+    "jupyter:install": "pip3 install -r config/requirements.txt && ijsinstall",
     "jupyter:prettier": "prettier --write 'notebooks/.exports/*.js'",
     "jupyter:prettier__should__": "Run prettier in JS notebooks as well and added to gitHook",
     "jupyter:screen": "screen -r jupyterScreen",
